@@ -7,7 +7,7 @@
 | Unit + API (Vitest) | 35/35 pass (5 unit, 30 API) | `backend/tests`, `backend/coverage` |
 | Coverage V8 | 94.77% line, 88.46% branch, 92.85% function | `backend/coverage` |
 | Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
-| E2E Chromium | 9/9 pass | `reports/generated/playwright` |
+| E2E Chromium | 18/18 pass trên Desktop Chrome và Pixel 5 | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |
 | Lighthouse production | Performance 100; Accessibility 100; Best Practices 96; SEO 82 | `reports/generated/lighthouse-production.report.html` |
 | k6 availability | 20 VUs/2 phút; 2,382 requests; 19.69 req/s; error 0%; p95 17.47 ms; exit 0 | `reports/generated/k6-final-summary.json` |
@@ -22,6 +22,7 @@
 - Token hết hạn bị từ chối, Helmet phát security headers và CORS chỉ cấp cho origin frontend được cấu hình; bằng chứng API nằm trong `backend/tests/api.spec.ts`.
 - Phòng có lịch sử được chuyển `INACTIVE`, không xóa dữ liệu nghiệp vụ.
 - Axe và Lighthouse production đạt ngưỡng accessibility/best practices đã đặt.
+- Luồng E2E chạy tuần tự qua desktop/mobile để cùng database test không tạo xung đột giả giữa các project.
 - ZAP production baseline không có alert High/Medium/Low; hai informational alert được giữ nguyên trong report.
 
 ## Evidence đã đóng

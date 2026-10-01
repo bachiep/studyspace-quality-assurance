@@ -62,7 +62,7 @@ test("student can see the cancelled booking in history", async ({ page }) => {
   await page.getByRole("button", { name: "11:00" }).first().click();
   await page.getByRole("button", { name: "Xác nhận đặt chỗ" }).click();
   await page.getByRole("button", { name: "Hủy lịch" }).click();
-  await expect(page.getByText("CANCELLED")).toBeVisible();
+  await expect(page.getByRole("complementary").getByText("CANCELLED").first()).toBeVisible();
 });
 
 test("admin can manage equipment from the operations console", async ({ page }) => {
