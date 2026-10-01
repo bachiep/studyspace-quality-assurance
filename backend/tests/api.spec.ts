@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
-import { createToken, hashPassword } from "../src/auth.js";
+import { assertAuthenticationConfiguration, createToken, hashPassword } from "../src/auth.js";
 import { prisma } from "../src/db.js";
 
 const app = createApp();
@@ -24,6 +24,21 @@ beforeEach(async () => {
 });
 
 describe.sequential("StudySpace API", () => {
+  it("requires a JWT secret when configured for production", () => {
+    const previousEnvironment = process.env.NODE_ENV;
+    const previousSecret = process.env.JWT_SECRET;
+    try {
+      process.env.NODE_ENV = "production";
+      delete process.env.JWT_SECRET;
+      expect(assertAuthenticationConfiguration).toThrow("JWT_SECRET must be configured in production.");
+    } finally {
+      if (previousEnvironment === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousEnvironment;
+      if (previousSecret === undefined) delete process.env.JWT_SECRET;
+      else process.env.JWT_SECRET = previousSecret;
+    }
+  });
+
   it("reports a healthy service through the public health contract", async () => {
     const response = await request(app).get("/health");
     expect(response.status).toBe(200);
