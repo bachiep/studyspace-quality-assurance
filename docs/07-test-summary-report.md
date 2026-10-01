@@ -13,6 +13,7 @@
 | k6 availability | 20 VUs/2 phút; 2,382 requests; 19.69 req/s; error 0%; p95 17.47 ms; exit 0 | `reports/generated/k6-final-summary.json` |
 | OWASP ZAP production baseline | 0 High, 0 Medium, 0 Low, 2 Informational | `reports/generated/zap/baseline-production.html` |
 | Runtime dependency audit | 0 High/critical vulnerabilities (`--omit=dev --omit=optional`) | CI security step |
+| Database migration isolation | Migrations áp thành công từ database test trắng trước unit/API và E2E | Console test, CI quality run |
 
 ## Quyết định chất lượng
 

@@ -29,7 +29,7 @@ erDiagram
   Equipment ||--o{ RoomEquipment : assigned
   User { string id PK string email UK string role }
   Room { string id PK string name UK int capacity string status }
-  Booking { string id PK string date string startTime string status }
+  Booking { string id PK string date string startTime string status string activeSlotKey UK string activeUserSlotKey UK }
   RoomClosure { string id PK string date string reason }
   Equipment { string id PK string name UK }
   RoomEquipment { string roomId FK string equipmentId FK }
@@ -52,4 +52,4 @@ flowchart TB
 
 - Presentation: React screens cho Student và Admin.
 - Application/domain: Express route, validation, RBAC và các quy tắc slot/booking thuần.
-- Data: Prisma transaction, unique constraint booking, SQLite và audit trail.
+- Data: Prisma transaction, hai unique active-key booking, SQLite và audit trail.

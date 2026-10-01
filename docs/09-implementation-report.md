@@ -19,7 +19,7 @@ Sơ đồ use case, ERD và component diagram nằm tại [00-diagrams.md](00-di
 
 ## 3. Mô hình dữ liệu và toàn vẹn
 
-`User`, `Room`, `Equipment`, `RoomEquipment`, `RoomClosure`, `Booking` và `AuditLog` là các thực thể nghiệp vụ. Email user, tên room và tên equipment là duy nhất. Booking có ràng buộc unique theo `roomId`, `date`, `startTime`; transaction cùng việc chuyển lỗi unique sang HTTP `409` chứng minh xử lý cạnh tranh ở tầng API. Room có lịch sử chỉ đổi sang `INACTIVE`, không xóa nghiệp vụ.
+`User`, `Room`, `Equipment`, `RoomEquipment`, `RoomClosure`, `Booking` và `AuditLog` là các thực thể nghiệp vụ. Email user, tên room và tên equipment là duy nhất. Booking lưu hai unique active-key: `roomId/date/startTime` và `userId/date/startTime` chỉ khi trạng thái là `BOOKED` hoặc `CHECKED_IN`; transaction cùng việc chuyển lỗi unique sang HTTP `409` bảo vệ cạnh tranh ở tầng API. Khi `CANCELLED` hoặc `NO_SHOW`, các khóa active được gỡ nhưng lịch sử vẫn giữ lại. Room có lịch sử chỉ đổi sang `INACTIVE`, không xóa nghiệp vụ.
 
 ## 4. REST API chính
 
@@ -38,12 +38,12 @@ API quản trị yêu cầu JWT có role `ADMIN`; token thiếu/hết hạn tr�
 |---|---|
 | `frontend/src` | UI, API client, màn hình Student/Admin và component booking/profile/operations. |
 | `backend/src` | Express application, auth, database, domain policy và server entry point. |
-| `backend/prisma` | Schema Prisma, SQLite seed và migration/push workflow. |
+| `backend/prisma` | Schema Prisma, SQLite seed và migration workflow. |
 | `backend/tests` | Unit policy test và Supertest API contract test. |
 | `tests/e2e` | Playwright Chromium E2E và accessibility axe. |
 | `tests/non-functional` | k6 availability scenario. |
 | `docs` | SRS, diagrams, plan, RTM, test catalog, bug report, ISO 25010 và summary. |
-| `.github/workflows/ci.yml` | CI: audit runtime dependency, database schema, test, mutation, build và E2E. |
+| `.github/workflows/ci.yml` | CI: audit runtime dependency, migration deploy, test, mutation, build và E2E. |
 
 ## 6. Tái lập môi trường
 

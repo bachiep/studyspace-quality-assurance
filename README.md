@@ -31,6 +31,6 @@ npm run build
 npm run e2e
 ```
 
-`npm test` và `npm run e2e` luôn reset database kiểm thử `backend/prisma/test.db` bằng Prisma migrations trước khi chạy; không tác động database phát triển.
+`npm test`, `npm run test:mutation` và `npm run e2e` luôn reset database kiểm thử `backend/prisma/test.db` bằng Prisma migrations trước khi chạy; không tác động database phát triển.
 
 Tài liệu kiểm định nằm trong [`docs`](docs/README.md). Kết quả sinh tự động phải để trong `reports/generated/` và không commit secrets hoặc database cục bộ.

@@ -41,3 +41,20 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 
 - `BUG-001` được liên kết với `REQ-BOOK-01` trong RTM và với `TC-E2E-01` trong test-case catalog.
 - `BUG-002` chỉ liên kết với evidence CI trong báo cáo lỗi vì không thay đổi một yêu cầu chức năng của SUT.
+
+## BUG-003 — Xung đột active booking chưa được bảo vệ đủ ở tầng database
+
+| Trường | Nội dung |
+|---|---|
+| Nguồn | [GitHub issue #4](https://github.com/bachiep/studyspace-quality-assurance/issues/4) — Closed |
+| Severity | Critical |
+| Phân hệ | Booking integrity và database |
+| Requirement liên quan | REQ-BOOK-02 |
+| Môi trường phát hiện | Review nghiệp vụ và kiểm thử API đồng thời trên SQLite |
+| Bước tái hiện | 1. Gửi đồng thời hai booking cùng Student, ngày và giờ nhưng hai room khác nhau; hoặc hủy/no-show một booking rồi thử đặt lại cùng slot. |
+| Actual result | Ràng buộc cũ chỉ biểu diễn room/date/slot; không thể hiện invariant Student active-slot ở tầng database và không giải phóng invariant theo trạng thái cuối. |
+| Expected result | Database phải chặn cả room active-slot và Student active-slot khi cạnh tranh; hủy/no-show giải phóng slot mà không mất lịch sử. |
+| Cách sửa | Thêm `activeSlotKey` và `activeUserSlotKey` unique, tạo/cập nhật chúng trong transaction cùng audit log, xóa khóa khi CANCELLED/NO_SHOW; bổ sung migration và API tests. |
+| Fix commit | [`80d474c`](https://github.com/bachiep/studyspace-quality-assurance/commit/80d474cf06de159bca7dce6be36ceedaad5cf130) |
+| Retest | `TC-API-04`, `TC-API-07`, `TC-API-19`, `TC-API-29`; kết quả 35/35 unit/API và CI quality pass. |
+| Trạng thái | Closed / Retested |

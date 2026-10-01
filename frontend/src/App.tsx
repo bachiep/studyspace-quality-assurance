@@ -1,11 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api, Booking, Room, Session } from "./api";
+import { api, Session } from "./api";
 import { AdminOperations } from "./AdminOperations";
 import { StudentProfile } from "./StudentProfile";
 import { BookingPanel as BookingPanelV2 } from "./BookingPanel";
 
-const slots = Array.from({ length: 14 }, (_, index) => `${String(index + 7).padStart(2, "0")}:00`);
-const dateAfter = (days = 1) => { const date = new Date(); date.setDate(date.getDate() + days); return date.toISOString().slice(0, 10); };
 const storedSession = (): Session | null => { try { return JSON.parse(localStorage.getItem("studyspace.session") || "null"); } catch { return null; } };
 
 function Notice({ message, type = "error" }: { message: string; type?: "error" | "success" }) {
@@ -26,18 +24,6 @@ function Auth({ onSession }: { onSession: (session: Session) => void }) {
       <button className="mt-5 text-sm font-semibold text-brand" onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}>{mode === "login" ? "Chưa có tài khoản? Đăng ký" : "Đã có tài khoản? Đăng nhập"}</button><p className="mt-6 rounded-xl bg-slate-50 p-3 text-xs text-slate-500">Tài khoản demo sau khi seed: admin@studyspace.local hoặc student@studyspace.local — mật khẩu StudySpace123!</p>
     </section>
   </main>;
-}
-
-function BookingPanel({ session }: { session: Session }) {
-  const [date, setDate] = useState(dateAfter()); const [rooms, setRooms] = useState<Room[]>([]); const [bookings, setBookings] = useState<Booking[]>([]); const [loading, setLoading] = useState(true); const [message, setMessage] = useState(""); const [error, setError] = useState(""); const [pending, setPending] = useState<{ room: Room; startTime: string } | null>(null);
-  const load = async () => { setLoading(true); try { const [roomData, bookingData] = await Promise.all([api.availability(date), api.myBookings(session.token)]); setRooms(roomData); setBookings(bookingData); } catch (reason) { setError(reason instanceof Error ? reason.message : "Không tải được dữ liệu."); } finally { setLoading(false); } };
-  useEffect(() => { void load(); }, [date]);
-  async function reserve(room: Room, startTime: string) { setError(""); setMessage(""); try { await api.createBooking(session.token, room.id, date, startTime); setMessage(`Đã giữ chỗ tại phòng ${room.name}, ${startTime}.`); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể đặt phòng."); } }
-  async function cancel(id: string) { try { await api.cancel(session.token, id); setMessage("Đã hủy lịch đặt."); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể hủy lịch."); } }
-  async function checkIn(id: string) { try { await api.checkIn(session.token, id); setMessage("Đã check-in thành công."); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Chưa thể check-in."); } }
-  return <div className="grid gap-6 xl:grid-cols-[1fr_330px]"><section className="card p-5 md:p-6"><div className="flex flex-wrap items-end justify-between gap-4"><div><h2 className="text-xl font-bold">Tìm phòng trống</h2><p className="text-sm text-slate-500">Chọn slot còn trống để giữ chỗ trong 60 phút.</p></div><label><span className="label">Ngày học</span><input className="field" value={date} min={dateAfter(0)} max={dateAfter(14)} type="date" onChange={(event) => setDate(event.target.value)}/></label></div>{message && <div className="mt-4"><Notice type="success" message={message}/></div>}{error && <div className="mt-4"><Notice message={error}/></div>}
-    {loading ? <p className="py-12 text-center text-slate-500">Đang tìm không gian phù hợp...</p> : <div className="mt-6 space-y-4">{rooms.length === 0 ? <p className="rounded-xl bg-slate-50 p-6 text-center text-slate-500">Chưa có phòng hoạt động.</p> : rooms.map((room) => <article className="rounded-2xl border border-slate-200 p-4" key={room.id}><div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-bold">Phòng {room.name} <span className="ml-2 rounded-full bg-brand/10 px-2 py-1 text-xs text-brand">{room.capacity} chỗ</span></h3><p className="mt-1 text-sm text-slate-500">{room.location} · {room.equipment.map((item) => item.equipment.name).join(" · ") || "Thiết bị cơ bản"}</p></div><span className={`text-sm font-semibold ${room.available ? "text-emerald-600" : "text-rose-600"}`}>{room.available ? "Đang mở" : "Đóng phòng"}</span></div><div className="mt-4 flex flex-wrap gap-2">{slots.map((slot) => { const unavailable = !room.available || room.occupiedSlots?.includes(slot); return <button key={slot} disabled={unavailable} onClick={() => reserve(room, slot)} className={`rounded-lg px-3 py-2 text-sm font-semibold ${unavailable ? "cursor-not-allowed bg-slate-100 text-slate-400 line-through" : "bg-indigo-50 text-brand hover:bg-brand hover:text-white"}`}>{slot}</button>; })}</div></article>)}</div>}</section>
-    <aside className="card h-fit p-5"><h2 className="text-xl font-bold">Lịch của tôi</h2><p className="mt-1 text-sm text-slate-500">Theo dõi hoặc hủy lịch khi còn đủ thời gian.</p><div className="mt-4 space-y-3">{bookings.length === 0 ? <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Bạn chưa có lịch đặt nào.</p> : bookings.map((booking) => <div className="rounded-xl border border-slate-200 p-3" key={booking.id}><div className="flex justify-between gap-2"><b>Phòng {booking.room.name}</b><span className="text-xs font-bold text-brand">{booking.status}</span></div><p className="mt-1 text-sm text-slate-500">{booking.date} · {booking.startTime}–{booking.endTime}</p>{booking.status === "BOOKED" && <div className="mt-3 flex gap-3"><button onClick={() => checkIn(booking.id)} className="text-sm font-semibold text-brand">Check-in</button><button onClick={() => cancel(booking.id)} className="text-sm font-semibold text-rose-600">Hủy lịch</button></div>}</div>)}</div></aside></div>;
 }
 
 function AdminPanel({ session }: { session: Session }) {
