@@ -108,11 +108,11 @@ export function createApp() {
     if (!booking) return res.status(404).json({ error: "BOOKING_NOT_FOUND", message: "Không tìm thấy lịch đặt." });
     if (booking.userId !== req.user!.id) return res.status(403).json({ error: "BOOKING_OWNER_ONLY", message: "Bạn chỉ được hủy lịch của mình." });
     if (booking.status !== BookingStatus.BOOKED || !canCancel(booking.date, booking.startTime)) return res.status(422).json({ error: "CANCELLATION_NOT_ALLOWED", message: "Lịch chỉ được hủy trước giờ bắt đầu ít nhất 60 phút." });
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await serializeBookingWrite(() => prisma.$transaction(async (tx) => {
       const cancelled = await tx.booking.update({ where: { id: booking.id }, data: { status: BookingStatus.CANCELLED, cancelledAt: new Date(), activeSlotKey: null, activeUserSlotKey: null } });
       await audit(tx, req.user!.id, "BOOKING_CANCELLED", "Booking", booking.id);
       return cancelled;
-    });
+    }));
     res.json(updated);
   }));
 
@@ -121,11 +121,11 @@ export function createApp() {
     if (!booking) return res.status(404).json({ error: "BOOKING_NOT_FOUND", message: "Không tìm thấy lịch đặt." });
     if (booking.userId !== req.user!.id) return res.status(403).json({ error: "BOOKING_OWNER_ONLY", message: "Bạn chỉ được check-in lịch của mình." });
     if (booking.status !== BookingStatus.BOOKED || !canCheckIn(booking.date, booking.startTime)) return res.status(422).json({ error: "CHECKIN_NOT_ALLOWED", message: "Chỉ check-in từ 15 phút trước đến 15 phút sau giờ bắt đầu." });
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await serializeBookingWrite(() => prisma.$transaction(async (tx) => {
       const checkedIn = await tx.booking.update({ where: { id: booking.id }, data: { status: BookingStatus.CHECKED_IN } });
       await audit(tx, req.user!.id, "BOOKING_CHECKED_IN", "Booking", booking.id);
       return checkedIn;
-    });
+    }));
     res.json(updated);
   }));
 
@@ -230,11 +230,11 @@ export function createApp() {
       throw new DomainError("INVALID_BOOKING_TRANSITION", "Chỉ booking BOOKED mới được chuyển sang CANCELLED, CHECKED_IN hoặc NO_SHOW.");
     }
     const isActive = input.status === BookingStatus.CHECKED_IN;
-    const booking = await prisma.$transaction(async (tx) => {
+    const booking = await serializeBookingWrite(() => prisma.$transaction(async (tx) => {
       const updated = await tx.booking.update({ where: { id: current.id }, data: { status: input.status, ...(input.status === BookingStatus.CANCELLED ? { cancelledAt: new Date() } : {}), ...(isActive ? {} : { activeSlotKey: null, activeUserSlotKey: null }) }, include: { room: true, user: { select: { id: true, name: true, email: true } } } });
       await audit(tx, req.user!.id, "BOOKING_STATUS_CHANGED", "Booking", updated.id, { status: updated.status });
       return updated;
-    });
+    }));
     res.json(booking);
   }));
 
