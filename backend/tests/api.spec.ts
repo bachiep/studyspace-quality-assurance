@@ -266,10 +266,15 @@ describe.sequential("StudySpace API", () => {
     expect(invalidStatus.body.error).toBe("VALIDATION_ERROR");
   });
 
-  it("enforces administration authorization for protected read endpoints", async () => {
-    const endpoints = ["/admin/users", "/admin/equipment", "/admin/rooms", "/admin/bookings", "/admin/reports/usage"];
-    for (const endpoint of endpoints) {
-      const response = await request(app).get(endpoint).set("authorization", `Bearer ${studentToken}`);
+  it("enforces administration authorization for every protected endpoint", async () => {
+    const requests = [
+      request(app).get("/admin/users"), request(app).get("/admin/equipment"), request(app).get("/admin/rooms"), request(app).get("/admin/bookings"), request(app).get("/admin/reports/usage"),
+      request(app).post("/admin/rooms").send({}), request(app).patch(`/admin/rooms/${roomId}/status`).send({}), request(app).post(`/admin/rooms/${roomId}/closures`).send({}), request(app).patch(`/admin/users/missing-user/role`).send({}),
+      request(app).post("/admin/equipment").send({}), request(app).delete("/admin/equipment/missing-equipment"), request(app).patch(`/admin/rooms/${roomId}`).send({}), request(app).patch(`/admin/rooms/${roomId}/equipment`).send({}),
+      request(app).get(`/admin/rooms/${roomId}/closures`), request(app).delete("/admin/closures/missing-closure"), request(app).patch("/admin/bookings/missing-booking/status").send({})
+    ];
+    for (const pending of requests) {
+      const response = await pending.set("authorization", `Bearer ${studentToken}`);
       expect(response.status).toBe(403);
       expect(response.body.error).toBe("ADMIN_ONLY");
     }
