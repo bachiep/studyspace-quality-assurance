@@ -56,6 +56,16 @@ test("admin can switch to the student view", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Tìm phòng trống" })).toBeVisible();
 });
 
+test("student filters rooms by capacity and required equipment", async ({ page }) => {
+  await login(page, "student@studyspace.local");
+  await page.getByLabel("Sức chứa tối thiểu").fill("15");
+  await page.getByLabel("Thiết bị cần có").fill("Bảng trắng");
+  await expect(page.getByRole("heading", { name: /Phòng B204/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Phòng A101/ })).toHaveCount(0);
+  await page.getByLabel("Thiết bị cần có").fill("Máy chiếu");
+  await expect(page.getByText("Chưa có phòng hoạt động.")).toBeVisible();
+});
+
 test("student can see the cancelled booking in history", async ({ page }) => {
   await login(page, "student@studyspace.local");
   await page.getByLabel("Ngày học").fill(tomorrow());

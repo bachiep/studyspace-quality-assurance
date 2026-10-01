@@ -7,7 +7,7 @@
 | Unit + API (Vitest) | 38/38 pass (5 unit, 33 API/configuration) | `backend/tests`, `backend/coverage` |
 | Coverage V8 | 94.89% line, 89.78% branch, 93.33% function | `backend/coverage` |
 | Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
-| E2E Chromium | 18/18 pass trên Desktop Chrome và Pixel 5 | `reports/generated/playwright` |
+| E2E Chromium | 20/20 pass trên Desktop Chrome và Pixel 5 | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |
 | Lighthouse production | Performance 100; Accessibility 100; Best Practices 96; SEO 82 | `reports/generated/lighthouse-production.report.html` |
 | k6 availability | 20 VUs/2 phút; 2,382 requests; 19.69 req/s; error 0%; p95 17.47 ms; exit 0 | `reports/generated/k6-final-summary.json` |
