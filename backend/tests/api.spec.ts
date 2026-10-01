@@ -1,4 +1,5 @@
 import { Role } from "@prisma/client";
+import jwt from "jsonwebtoken";
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
@@ -153,5 +154,14 @@ describe("StudySpace API", () => {
     const response = await request(app).patch(`/admin/bookings/${created.body.id}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "NO_SHOW" });
     expect(response.status).toBe(200); expect(response.body.status).toBe("NO_SHOW");
     expect(await prisma.auditLog.count({ where: { action: "BOOKING_STATUS_CHANGED" } })).toBe(1);
+  });
+
+  it("rejects expired tokens and emits baseline security headers", async () => {
+    const expired = jwt.sign({ email: "student@test.local", role: Role.STUDENT }, process.env.JWT_SECRET || "studyspace-development-secret-change-me", { subject: "expired-user", expiresIn: -1 });
+    const expiredResponse = await request(app).get("/bookings/me").set("authorization", `Bearer ${expired}`);
+    expect(expiredResponse.status).toBe(401); expect(expiredResponse.body.error).toBe("INVALID_TOKEN");
+    const health = await request(app).get("/health");
+    expect(health.headers["x-content-type-options"]).toBe("nosniff");
+    expect(health.headers["x-frame-options"]).toBe("SAMEORIGIN");
   });
 });

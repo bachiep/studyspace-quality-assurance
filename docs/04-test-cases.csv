@@ -7,6 +7,7 @@ TC-API-02,REQ-AUTH-02,Student cannot create room,Student token,POST admin room,4
 TC-API-03,REQ-BOOK-04,Create booking records audit log,Student and room exist,POST booking,201 and one BOOKING_CREATED audit log,High,Automated
 TC-API-04,REQ-BOOK-02,Concurrent room booking,Student and room exist,Submit two identical requests,One 201 and one 409,Critical,Automated
 TC-API-05,REQ-ROOM-01,Inactive room is hidden,Admin and room exist,Set room INACTIVE then GET availability,Empty result,High,Automated
+TC-API-18,REQ-AUTH-02,Reject expired token and emit security headers,Expired JWT,GET protected route and health endpoint,401 INVALID_TOKEN plus nosniff and SAMEORIGIN headers,Critical,Automated
 TC-E2E-01,REQ-AUTH-01,Student login and find room,Seed database,Login then choose date,Rooms and slots render,High,Passed
 TC-E2E-02,REQ-BOOK-01,Student booking then cancel,Logged in student,Choose free slot then cancel,Booking and CANCELLED history displayed,High,Passed
 TC-E2E-03,REQ-BOOK-03,Invalid credentials and registration,Landing page,Submit invalid login then register,Clear error and portal access,High,Passed

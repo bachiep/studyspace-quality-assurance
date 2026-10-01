@@ -4,8 +4,8 @@
 
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
-| Unit + API (Vitest) | 24/24 pass | `backend/tests`, `backend/coverage` |
-| Coverage V8 | 96.55% line, 75.58% branch, 100% function | `backend/coverage` |
+| Unit + API (Vitest) | 25/25 pass | `backend/tests`, `backend/coverage` |
+| Coverage V8 | 96.55% line, 75.86% branch, 100% function | `backend/coverage` |
 | E2E Chromium | 9/9 pass | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |
 | Lighthouse production | Performance 100; Accessibility 100; Best Practices 96; SEO 82 | `reports/generated/lighthouse-production.report.html` |
@@ -15,6 +15,7 @@
 
 - Booking concurrent được test: một request 201, request còn lại 409; SQLite unique constraint và transaction là biện pháp phòng ngừa.
 - RBAC đã có test 401/403 và API admin chỉ nhận token ADMIN.
+- Token hết hạn bị từ chối và Helmet phát security headers; bằng chứng API nằm trong `backend/tests/api.spec.ts`.
 - Phòng có lịch sử được chuyển `INACTIVE`, không xóa dữ liệu nghiệp vụ.
 - Axe và Lighthouse production đạt ngưỡng accessibility/best practices đã đặt.
 
