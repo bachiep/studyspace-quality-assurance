@@ -1,0 +1,43 @@
+# Bug Reports
+
+Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên GitHub. Kết quả retest tham chiếu đến test tự động và CI đã có trong repository; không sử dụng lỗi giả định.
+
+## BUG-001 — Luồng đặt chỗ thiếu bước xác nhận
+
+| Trường | Nội dung |
+|---|---|
+| Nguồn | [GitHub issue #1](https://github.com/bachiep/studyspace-quality-assurance/issues/1) — Closed |
+| Severity | Medium |
+| Phân hệ | Student booking |
+| Requirement liên quan | REQ-BOOK-01 |
+| Môi trường phát hiện | Giao diện student cục bộ, trước commit sửa |
+| Tiền điều kiện | Student đã đăng nhập và có slot trống |
+| Bước tái hiện | 1. Chọn một slot trống. 2. Quan sát hành vi sau thao tác chọn slot. |
+| Actual result | Request tạo booking được gửi ngay, người dùng không có cơ hội xác nhận lại phòng, ngày và giờ. |
+| Expected result | Hệ thống hiển thị hộp thoại xác nhận; chỉ tạo booking khi người dùng chọn xác nhận. Đóng/hủy hộp thoại không tạo booking. |
+| Cách sửa | Bổ sung modal xác nhận trong `BookingPanel` và cập nhật luồng E2E để chọn nút `Xác nhận đặt chỗ`. |
+| Fix commit | [`14279ac`](https://github.com/bachiep/studyspace-quality-assurance/commit/14279ac8fb4027958d1758b63167dcdeff8dc4e7) |
+| Retest | `TC-E2E-01`; test xác minh dialog có tên `Xác nhận đặt chỗ` xuất hiện trước khi chọn nút xác nhận. Test Summary Report ghi nhận E2E Chromium 9/9 pass. |
+| Trạng thái | Closed / Retested |
+
+## BUG-002 — CI chưa khởi tạo SQLite trước E2E
+
+| Trường | Nội dung |
+|---|---|
+| Nguồn | [GitHub issue #2](https://github.com/bachiep/studyspace-quality-assurance/issues/2) — Closed |
+| Severity | High |
+| Phân hệ | Hạ tầng kiểm thử CI |
+| Requirement liên quan | Không áp dụng; lỗi thuộc môi trường thực thi kiểm thử, không phải yêu cầu chức năng SUT. |
+| Môi trường phát hiện | GitHub Actions runner sạch |
+| Bước tái hiện | Chạy workflow CI/E2E trên runner chưa có `DATABASE_URL` và chưa áp schema SQLite. |
+| Actual result | Prisma không có database sẵn sàng, làm bước seed/E2E không thể xác nhận các luồng Playwright. |
+| Expected result | Workflow dùng SQLite riêng cho CI và áp schema trước khi seed/E2E. |
+| Cách sửa | Khai báo `DATABASE_URL=file:./ci.db` trong workflow và thêm bước `npm run prisma:push --workspace backend` trước test/E2E. |
+| Fix commit | [`fd37daa`](https://github.com/bachiep/studyspace-quality-assurance/commit/fd37daa9508bb4588cceddf4d9d035941a4f3371) |
+| Retest | Commit sửa ghi nhận chạy cục bộ 9 Playwright E2E pass; CI hiện chạy schema trước test, mutation, build và E2E. Test Summary Report ghi nhận E2E Chromium 9/9 pass. |
+| Trạng thái | Closed / Retested |
+
+## Quy ước truy vết
+
+- `BUG-001` được liên kết với `REQ-BOOK-01` trong RTM và với `TC-E2E-01` trong test-case catalog.
+- `BUG-002` chỉ liên kết với evidence CI trong báo cáo lỗi vì không thay đổi một yêu cầu chức năng của SUT.

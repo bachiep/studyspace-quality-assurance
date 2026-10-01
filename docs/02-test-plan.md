@@ -31,10 +31,10 @@ New → Triaged → In Progress → Ready for retest → Verified → Closed. M�
 
 ## Baseline đã xác minh
 
-- Vitest: 25/25 pass.
+- Vitest: 33/33 pass (5 unit, 28 API).
 - `src/domain/booking-policy.ts`: 100% line/branch coverage.
-- Tổng coverage backend: 96.55% line, 75.86% branch, 100% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
-- StrykerJS: 68 mutants, 50 killed, 13 survived, 5 compile-error; mutation score 79.37%, đạt ngưỡng 60%.
+- Tổng coverage backend: 96.55% line, 88.68% branch, 100% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
+- StrykerJS: 68 mutants, 52 killed, 11 survived, 5 compile-error; mutation score 82.54%, đạt ngưỡng 60%.
 - Playwright Chromium: 9/9 pass, gồm luồng student, admin report, RBAC/error UI, đăng ký, chuyển góc nhìn, lịch sử hủy, quản lý thiết bị, cập nhật hồ sơ và axe không có vi phạm serious/critical ở trang đăng nhập.
 - Lighthouse production: Performance 100, Accessibility 100, Best Practices 96.
 - k6 availability: 20 VUs/2 phút, 2.382 requests, error rate 0%, p95 17.47 ms; CLI exit code 0 and both thresholds passed.

@@ -4,9 +4,9 @@
 
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
-| Unit + API (Vitest) | 25/25 pass | `backend/tests`, `backend/coverage` |
-| Coverage V8 | 96.55% line, 75.86% branch, 100% function | `backend/coverage` |
-| Mutation testing | 50 killed / 13 survived / 5 compile-error mutants; score 79.37% | `reports/generated/stryker/mutation.json` |
+| Unit + API (Vitest) | 33/33 pass (5 unit, 28 API) | `backend/tests`, `backend/coverage` |
+| Coverage V8 | 96.55% line, 88.68% branch, 100% function | `backend/coverage` |
+| Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
 | E2E Chromium | 9/9 pass | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |
 | Lighthouse production | Performance 100; Accessibility 100; Best Practices 96; SEO 82 | `reports/generated/lighthouse-production.report.html` |
@@ -25,7 +25,7 @@
 
 ## Evidence đã đóng
 
-- Stryker mutation score đã đạt 79.37% (mục tiêu ≥60%).
+- Stryker mutation score đã đạt 82.54% (mục tiêu ≥60%).
 - OWASP ZAP production baseline đã chạy, không có High/Medium/Low.
 
 Hai mục được ghi nhận từ report thực tế, không suy diễn từ các test khác.

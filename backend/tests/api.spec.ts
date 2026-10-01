@@ -23,7 +23,13 @@ beforeEach(async () => {
   roomId = room.id; studentToken = createToken(student); adminToken = createToken(admin);
 });
 
-describe("StudySpace API", () => {
+describe.sequential("StudySpace API", () => {
+  it("reports a healthy service through the public health contract", async () => {
+    const response = await request(app).get("/health");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ status: "ok" });
+  });
+
   it("requires authentication for booking", async () => {
     const response = await request(app).post("/bookings").send({ roomId, date: futureDate, startTime: "10:00" });
     expect(response.status).toBe(401);
@@ -81,6 +87,14 @@ describe("StudySpace API", () => {
     expect(profile.body).toMatchObject({ email: "new@test.local", role: "STUDENT" });
   });
 
+  it("validates registration, profile updates and unauthenticated profile access", async () => {
+    await request(app).post("/auth/register").send({ name: "A", email: "invalid", password: "short" }).expect(422);
+    await request(app).get("/auth/me").expect(401);
+    const invalidUpdate = await request(app).patch("/auth/me").set("authorization", `Bearer ${studentToken}`).send({ name: "", email: "not-an-email" });
+    expect(invalidUpdate.status).toBe(422);
+    expect(invalidUpdate.body.error).toBe("VALIDATION_ERROR");
+  });
+
   it("rejects invalid credentials and invalid booking input", async () => {
     await request(app).post("/auth/login").send({ email: "student@test.local", password: "wrong" }).expect(401);
     const response = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "10:30" });
@@ -92,6 +106,15 @@ describe("StudySpace API", () => {
     expect(created.status).toBe(201); expect(created.body.equipment[0].equipment.name).toBe("Máy chiếu");
     const response = await request(app).get("/rooms?minCapacity=15&equipment=M%C3%A1y%20chi%E1%BA%BFu");
     expect(response.body).toHaveLength(1); expect(response.body[0].name).toBe("B202");
+  });
+
+  it("validates public availability dates and excludes rooms that do not meet capacity", async () => {
+    const invalid = await request(app).get("/rooms/availability?date=tomorrow");
+    expect(invalid.status).toBe(422);
+    expect(invalid.body.error).toBe("VALIDATION_ERROR");
+    const rooms = await request(app).get("/rooms?minCapacity=99");
+    expect(rooms.status).toBe(200);
+    expect(rooms.body).toEqual([]);
   });
 
   it("protects booking ownership and exposes booking lists to their intended roles", async () => {
@@ -106,6 +129,14 @@ describe("StudySpace API", () => {
     const response = await request(app).patch(`/bookings/${created.body.id}/check-in`).set("authorization", `Bearer ${studentToken}`);
     expect(response.status).toBe(422); expect(response.body.error).toBe("CHECKIN_NOT_ALLOWED");
   });
+  it("returns not-found contracts for booking actions", async () => {
+    const cancel = await request(app).patch("/bookings/missing-booking/cancel").set("authorization", `Bearer ${studentToken}`);
+    expect(cancel.status).toBe(404);
+    expect(cancel.body.error).toBe("BOOKING_NOT_FOUND");
+    const checkIn = await request(app).patch("/bookings/missing-booking/check-in").set("authorization", `Bearer ${studentToken}`);
+    expect(checkIn.status).toBe(404);
+    expect(checkIn.body.error).toBe("BOOKING_NOT_FOUND");
+  });
   it("allows admins to list users and change another user role with an audit trail", async () => {
     const users = await request(app).get("/admin/users").set("authorization", `Bearer ${adminToken}`);
     expect(users.status).toBe(200); expect(users.body).toHaveLength(2);
@@ -113,6 +144,17 @@ describe("StudySpace API", () => {
     const changed = await request(app).patch(`/admin/users/${student.id}/role`).set("authorization", `Bearer ${adminToken}`).send({ role: "ADMIN" });
     expect(changed.body.role).toBe("ADMIN");
     expect(await prisma.auditLog.count({ where: { action: "USER_ROLE_CHANGED" } })).toBe(1);
+  });
+
+  it("rejects invalid administrative room, closure and role changes", async () => {
+    const invalidStatus = await request(app).patch(`/admin/rooms/${roomId}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "ARCHIVED" });
+    expect(invalidStatus.status).toBe(422);
+    const invalidClosure = await request(app).post(`/admin/rooms/${roomId}/closures`).set("authorization", `Bearer ${adminToken}`).send({ date: futureDate, reason: "x" });
+    expect(invalidClosure.status).toBe(422);
+    const admin = await prisma.user.findUniqueOrThrow({ where: { email: "admin@test.local" } });
+    const selfDemotion = await request(app).patch(`/admin/users/${admin.id}/role`).set("authorization", `Bearer ${adminToken}`).send({ role: "STUDENT" });
+    expect(selfDemotion.status).toBe(422);
+    expect(selfDemotion.body.error).toBe("SELF_ROLE_CHANGE_FORBIDDEN");
   });
 
   it("manages unused equipment and protects equipment attached to a room", async () => {
@@ -136,6 +178,17 @@ describe("StudySpace API", () => {
     expect(await prisma.auditLog.count({ where: { action: "ROOM_CLOSURE_DELETED" } })).toBe(1);
   });
 
+  it("validates room patches, equipment assignment and closure deletion", async () => {
+    const emptyPatch = await request(app).patch(`/admin/rooms/${roomId}`).set("authorization", `Bearer ${adminToken}`).send({});
+    expect(emptyPatch.status).toBe(422);
+    const unknownEquipment = await request(app).patch(`/admin/rooms/${roomId}/equipment`).set("authorization", `Bearer ${adminToken}`).send({ equipmentIds: ["missing-equipment"] });
+    expect(unknownEquipment.status).toBe(422);
+    expect(unknownEquipment.body.error).toBe("EQUIPMENT_NOT_FOUND");
+    const missingClosure = await request(app).delete("/admin/closures/missing-closure").set("authorization", `Bearer ${adminToken}`);
+    expect(missingClosure.status).toBe(404);
+    expect(missingClosure.body.error).toBe("NOT_FOUND");
+  });
+
   it("allows an authenticated user to update their profile", async () => {
     const response = await request(app).patch("/auth/me").set("authorization", `Bearer ${studentToken}`).send({ name: "Updated Student", email: "updated@test.local" });
     expect(response.status).toBe(200); expect(response.body).toMatchObject({ name: "Updated Student", email: "updated@test.local" });
@@ -154,6 +207,24 @@ describe("StudySpace API", () => {
     const response = await request(app).patch(`/admin/bookings/${created.body.id}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "NO_SHOW" });
     expect(response.status).toBe(200); expect(response.body.status).toBe("NO_SHOW");
     expect(await prisma.auditLog.count({ where: { action: "BOOKING_STATUS_CHANGED" } })).toBe(1);
+  });
+
+  it("validates administrative booking filters and status changes", async () => {
+    const invalidFilter = await request(app).get("/admin/bookings?date=2026/10/01").set("authorization", `Bearer ${adminToken}`);
+    expect(invalidFilter.status).toBe(422);
+    const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "18:00" }).expect(201);
+    const invalidStatus = await request(app).patch(`/admin/bookings/${created.body.id}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "UNKNOWN" });
+    expect(invalidStatus.status).toBe(422);
+    expect(invalidStatus.body.error).toBe("VALIDATION_ERROR");
+  });
+
+  it("enforces administration authorization for protected read endpoints", async () => {
+    const endpoints = ["/admin/users", "/admin/equipment", "/admin/rooms", "/admin/bookings", "/admin/reports/usage"];
+    for (const endpoint of endpoints) {
+      const response = await request(app).get(endpoint).set("authorization", `Bearer ${studentToken}`);
+      expect(response.status).toBe(403);
+      expect(response.body.error).toBe("ADMIN_ONLY");
+    }
   });
 
   it("rejects expired tokens and emits baseline security headers", async () => {
