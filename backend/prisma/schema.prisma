@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum RoomStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  CHECKED_IN
+  NO_SHOW
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(STUDENT)
+  createdAt    DateTime  @default(now())
+  bookings     Booking[]
+  auditLogs    AuditLog[] @relation("actorLogs")
+}
+
+model Room {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  capacity    Int
+  location    String
+  status      RoomStatus  @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  bookings    Booking[]
+  closures    RoomClosure[]
+  equipment   RoomEquipment[]
+}
+
+model Equipment {
+  id    String @id @default(cuid())
+  name  String @unique
+  rooms RoomEquipment[]
+}
+
+model RoomEquipment {
+  roomId      String
+  equipmentId String
+  room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  @@id([roomId, equipmentId])
+}
+
+model RoomClosure {
+  id        String   @id @default(cuid())
+  roomId    String
+  date      String
+  reason    String
+  createdAt DateTime @default(now())
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  @@unique([roomId, date])
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  userId      String
+  roomId      String
+  date        String
+  startTime   String
+  endTime     String
+  status      BookingStatus @default(BOOKED)
+  createdAt   DateTime      @default(now())
+  cancelledAt DateTime?
+  user        User          @relation(fields: [userId], references: [id])
+  room        Room          @relation(fields: [roomId], references: [id])
+  @@unique([roomId, date, startTime])
+  @@index([userId, date, startTime])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String
+  entity    String
+  entityId  String
+  metadata  String?
+  createdAt DateTime @default(now())
+  actor     User     @relation("actorLogs", fields: [actorId], references: [id])
+}

@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+reports/generated/
+*.log
+*.trace
+*.har
+recordings/
+.browser-harness/
+.codex/
+.agents/
+backend/prisma/*.db
+backend/prisma/*.db-journal
+.env

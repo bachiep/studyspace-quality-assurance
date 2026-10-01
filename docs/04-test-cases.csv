@@ -1,0 +1,19 @@
+ID,Requirement,Title,Precondition,Steps,Expected result,Priority,Status
+TC-UNIT-01,REQ-BOOK-01,Reject slot after 20:00,None,Validate 21:00,Domain error INVALID_SLOT,High,Automated
+TC-UNIT-02,REQ-BOOK-01,Reject date beyond 14 days,None,Validate day 15,Domain error INVALID_DATE,High,Automated
+TC-UNIT-05,REQ-BOOK-03,Check cancel and check-in windows,None,Call pure policy at boundaries,Correct boolean result,High,Automated
+TC-API-01,REQ-AUTH-01,Reject unauthenticated booking,Room exists,POST booking without token,401 AUTH_REQUIRED,Critical,Automated
+TC-API-02,REQ-AUTH-02,Student cannot create room,Student token,POST admin room,403 ADMIN_ONLY,Critical,Automated
+TC-API-03,REQ-BOOK-04,Create booking records audit log,Student and room exist,POST booking,201 and one BOOKING_CREATED audit log,High,Automated
+TC-API-04,REQ-BOOK-02,Concurrent room booking,Student and room exist,Submit two identical requests,One 201 and one 409,Critical,Automated
+TC-API-05,REQ-ROOM-01,Inactive room is hidden,Admin and room exist,Set room INACTIVE then GET availability,Empty result,High,Automated
+TC-E2E-01,REQ-AUTH-01,Student login and find room,Seed database,Login then choose date,Rooms and slots render,High,Passed
+TC-E2E-02,REQ-BOOK-01,Student booking then cancel,Logged in student,Choose free slot then cancel,Booking and CANCELLED history displayed,High,Passed
+TC-E2E-03,REQ-BOOK-03,Invalid credentials and registration,Landing page,Submit invalid login then register,Clear error and portal access,High,Passed
+TC-E2E-04,REQ-REPORT-01,Admin sees report and creates room,Logged in admin,Open console and create room,Metrics and audit success displayed,Medium,Passed
+TC-E2E-05,REQ-AUTH-02,Admin switches student view,Logged in admin,Click student perspective,Student portal displayed,Medium,Passed
+TC-E2E-06,REQ-BOOK-04,Cancelled booking remains in history,Cancelled booking exists,Open student portal,Status CANCELLED displayed,High,Passed
+TC-E2E-07,REQ-ROOM-01,Admin manages equipment,Logged in admin,Create equipment,Success notice and item displayed,High,Passed
+TC-E2E-08,REQ-AUTH-01,Login page accessibility,Landing page,Run axe scan,No serious or critical violation,High,Passed
+TC-E2E-09,REQ-AUTH-01,Student updates profile,Logged in student,Edit name and save,Success notice and audit entry,Medium,Passed
+TC-NF-01,REQ-BOOK-02,Load booking availability,Seed room,k6 20 VUs for 2 minutes,p95 4.53ms and error rate 0%,Critical,Passed

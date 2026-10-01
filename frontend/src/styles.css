@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base { body { @apply min-h-screen bg-mist text-ink antialiased; } button, input, select { font: inherit; } }
+@layer components {
+  .card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
+  .button { @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 font-semibold transition focus:outline-none focus:ring-4 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50; }
+  .button-primary { @apply button bg-brand text-white hover:bg-indigo-700; }
+  .button-secondary { @apply button bg-slate-100 text-ink hover:bg-slate-200; }
+  .field { @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10; }
+  .label { @apply mb-1.5 block text-sm font-medium text-slate-700; }
+}

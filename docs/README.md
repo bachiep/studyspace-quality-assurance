@@ -1,0 +1,12 @@
+# Hồ sơ kiểm định StudySpace
+
+| Nhóm tài liệu | Mục đích |
+|---|---|
+| [SRS](01-srs.md) | Đặc tả yêu cầu 4 phân hệ |
+| [Test Plan](02-test-plan.md) | Phạm vi, chiến lược, rủi ro và exit criteria |
+| [RTM](03-rtm.csv) | Truy vết yêu cầu đến test case và evidence |
+| [Test cases](04-test-cases.csv) | Kịch bản kiểm thử có thể thực thi |
+| [Bug template](05-bug-template.md) | Mẫu ghi nhận và vòng đời lỗi |
+| [ISO 25010](06-iso25010.md) | Khung đánh giá chất lượng |
+
+Mã định danh: `REQ-{AUTH|ROOM|BOOK|REPORT}-NN`, `TC-{UNIT|API|E2E|NF}-NN`, `BUG-NN`.

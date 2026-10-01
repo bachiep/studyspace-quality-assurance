@@ -1,0 +1,12 @@
+Requirement ID,Requirement,Test Case ID,Test level,Evidence
+REQ-AUTH-01,Password hash and login,TC-API-01,API,backend tests/api.spec.ts
+REQ-AUTH-02,RBAC protects admin APIs,TC-API-02,API,backend tests/api.spec.ts
+REQ-AUTH-03,Student profile management,TC-API-17;TC-E2E-09,API/E2E,backend tests/api.spec.ts;reports/generated/playwright
+REQ-ROOM-01,Room lifecycle and inactive rooms hidden,TC-API-05;TC-API-16,API/E2E,backend tests/api.spec.ts;reports/generated/playwright
+REQ-ROOM-02,Closed room cannot receive booking,TC-API-06;TC-API-16,API/E2E,backend tests/api.spec.ts;reports/generated/playwright
+REQ-ROOM-03,Admin manages equipment and closures,TC-API-15;TC-API-16;TC-E2E-07,API/E2E,backend tests/api.spec.ts;reports/generated/playwright
+REQ-BOOK-01,Valid dates and slots only,TC-UNIT-01;TC-UNIT-02,Unit,backend tests/booking-policy.spec.ts
+REQ-BOOK-02,No booking conflict,TC-API-04,API,backend tests/api.spec.ts
+REQ-BOOK-03,Cancellation and check-in windows,TC-UNIT-05,Unit,backend tests/booking-policy.spec.ts
+REQ-BOOK-04,Audit log created,TC-API-03,API,backend tests/api.spec.ts
+REQ-REPORT-01,Usage totals,TC-API-07;TC-E2E-02,API/E2E,backend tests/api.spec.ts;reports/generated/playwright
