@@ -1,0 +1,13 @@
+{
+  "tool": "k6",
+  "scenario": "availability",
+  "vus": 20,
+  "duration": "2m",
+  "requests": 2382,
+  "throughputPerSecond": 19.69,
+  "errorRate": 0,
+  "p95Milliseconds": 17.47,
+  "thresholds": { "http_req_failed": "passed", "http_req_duration": "passed" },
+  "exitCode": 0,
+  "status": "passed"
+}

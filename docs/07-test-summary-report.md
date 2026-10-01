@@ -6,10 +6,13 @@
 |---|---:|---|
 | Unit + API (Vitest) | 25/25 pass | `backend/tests`, `backend/coverage` |
 | Coverage V8 | 96.55% line, 75.86% branch, 100% function | `backend/coverage` |
+| Mutation testing | 50 killed / 13 survived / 5 compile-error mutants; score 79.37% | `reports/generated/stryker/mutation.json` |
 | E2E Chromium | 9/9 pass | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |
 | Lighthouse production | Performance 100; Accessibility 100; Best Practices 96; SEO 82 | `reports/generated/lighthouse-production.report.html` |
-| k6 availability | 20 VUs/2 phút; 2,400 request; 19.92 req/s; error 0%; p95 4.53 ms | `reports/generated/k6-final-summary.json` |
+| k6 availability | 20 VUs/2 phút; 2,382 requests; 19.69 req/s; error 0%; p95 17.47 ms; exit 0 | `reports/generated/k6-final-summary.json` |
+| OWASP ZAP production baseline | 0 High, 0 Medium, 0 Low, 2 Informational | `reports/generated/zap/baseline-production.html` |
+| Runtime dependency audit | 0 High/critical vulnerabilities (`--omit=dev --omit=optional`) | CI security step |
 
 ## Quyết định chất lượng
 
@@ -18,10 +21,11 @@
 - Token hết hạn bị từ chối và Helmet phát security headers; bằng chứng API nằm trong `backend/tests/api.spec.ts`.
 - Phòng có lịch sử được chuyển `INACTIVE`, không xóa dữ liệu nghiệp vụ.
 - Axe và Lighthouse production đạt ngưỡng accessibility/best practices đã đặt.
+- ZAP production baseline không có alert High/Medium/Low; hai informational alert được giữ nguyên trong report.
 
-## Mục còn cần chạy trước khi đóng hồ sơ
+## Evidence đã đóng
 
-- Stryker mutation report cho `booking-policy.ts` (mục tiêu >=60%).
-- OWASP ZAP baseline report; chỉ đóng khi không còn finding High.
+- Stryker mutation score đã đạt 79.37% (mục tiêu ≥60%).
+- OWASP ZAP production baseline đã chạy, không có High/Medium/Low.
 
-Hai mục này được ghi nhận minh bạch là pending, không suy diễn từ các test khác.
+Hai mục được ghi nhận từ report thực tế, không suy diễn từ các test khác.

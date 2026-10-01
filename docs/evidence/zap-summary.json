@@ -1,0 +1,8 @@
+{
+  "tool": "OWASP ZAP",
+  "version": "2.17.0",
+  "target": "Vite production preview",
+  "alerts": { "high": 0, "medium": 0, "low": 0, "informational": 2 },
+  "status": "passed",
+  "report": "reports/generated/zap/baseline-production.html"
+}

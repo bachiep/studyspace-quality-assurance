@@ -17,4 +17,4 @@ TC-E2E-06,REQ-BOOK-04,Cancelled booking remains in history,Cancelled booking exi
 TC-E2E-07,REQ-ROOM-01,Admin manages equipment,Logged in admin,Create equipment,Success notice and item displayed,High,Passed
 TC-E2E-08,REQ-AUTH-01,Login page accessibility,Landing page,Run axe scan,No serious or critical violation,High,Passed
 TC-E2E-09,REQ-AUTH-01,Student updates profile,Logged in student,Edit name and save,Success notice and audit entry,Medium,Passed
-TC-NF-01,REQ-BOOK-02,Load booking availability,Seed room,k6 20 VUs for 2 minutes,p95 4.53ms and error rate 0%,Critical,Passed
+TC-NF-01,REQ-BOOK-02,Load booking availability,Seed room,k6 20 VUs for 2 minutes,p95 17.47ms and error rate 0% with exit code 0,Critical,Passed
