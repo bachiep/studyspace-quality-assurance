@@ -43,7 +43,9 @@ flowchart TB
   UI[React + Vite + Tailwind UI] -->|HTTPS / JSON| API[Express Controller + Zod + Helmet]
   API --> Domain[Domain services: booking policy]
   API --> Auth[JWT / bcrypt / RBAC]
+  API --> Queue[SQLite booking write queue]
   Domain --> Data[Prisma Repository]
+  Queue --> Data
   Auth --> Data
   Data --> DB[(SQLite)]
   API --> Audit[Audit log]
@@ -51,5 +53,5 @@ flowchart TB
 ```
 
 - Presentation: React screens cho Student và Admin.
-- Application/domain: Express route, validation, RBAC và các quy tắc slot/booking thuần.
+- Application/domain: Express route, validation, RBAC, hàng đợi write booking cho SQLite và các quy tắc slot/booking thuần.
 - Data: Prisma transaction, hai unique active-key booking, SQLite và audit trail.
