@@ -58,6 +58,10 @@ test("admin can switch to the student view", async ({ page }) => {
 
 test("student can see the cancelled booking in history", async ({ page }) => {
   await login(page, "student@studyspace.local");
+  await page.getByLabel("Ngày học").fill(tomorrow());
+  await page.getByRole("button", { name: "11:00" }).first().click();
+  await page.getByRole("button", { name: "Xác nhận đặt chỗ" }).click();
+  await page.getByRole("button", { name: "Hủy lịch" }).click();
   await expect(page.getByText("CANCELLED")).toBeVisible();
 });
 

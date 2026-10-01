@@ -7,10 +7,12 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
-    "test": "cross-env DATABASE_URL=file:./test.db prisma db push --skip-generate && cross-env DATABASE_URL=file:./test.db vitest run --coverage",
+    "test": "cross-env DATABASE_URL=file:./test.db prisma migrate reset --force --skip-seed && cross-env DATABASE_URL=file:./test.db vitest run --coverage",
     "test:watch": "vitest",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:reset": "prisma migrate reset --force --skip-seed",
     "prisma:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {

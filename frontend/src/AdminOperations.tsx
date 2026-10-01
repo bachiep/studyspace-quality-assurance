@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { AdminUser, api, Booking, Closure, Equipment, Room, Session } from "./api";
 
-const futureDate = () => { const date = new Date(); date.setDate(date.getDate() + 1); return date.toISOString().slice(0, 10); };
+const futureDate = () => { const date = new Date(); date.setDate(date.getDate() + 1); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; };
 type AdminBooking = Booking & { user: { name: string; email: string } };
 
 export function AdminOperations({ session }: { session: Session }) {

@@ -79,11 +79,12 @@ model Booking {
   startTime   String
   endTime     String
   status      BookingStatus @default(BOOKED)
+  activeSlotKey String?      @unique
+  activeUserSlotKey String?  @unique
   createdAt   DateTime      @default(now())
   cancelledAt DateTime?
   user        User          @relation(fields: [userId], references: [id])
   room        Room          @relation(fields: [roomId], references: [id])
-  @@unique([roomId, date, startTime])
   @@index([userId, date, startTime])
 }
 

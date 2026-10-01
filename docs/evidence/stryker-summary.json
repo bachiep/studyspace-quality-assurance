@@ -3,8 +3,8 @@
   "version": "10.0.0",
   "target": "backend/src/domain/booking-policy.ts",
   "tests": 25,
-  "mutants": { "killed": 50, "survived": 13, "compileError": 5 },
-  "mutationScore": 79.37,
+  "mutants": { "killed": 52, "survived": 11, "compileError": 5 },
+  "mutationScore": 82.54,
   "threshold": 60,
   "status": "passed"
 }

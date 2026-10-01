@@ -10,16 +10,23 @@ import { prisma } from "./db.js";
 
 const asyncRoute = (handler: express.RequestHandler): express.RequestHandler => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 const bookingStates = [BookingStatus.BOOKED, BookingStatus.CHECKED_IN];
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày phải theo YYYY-MM-DD");
+const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày phải theo YYYY-MM-DD").refine((value) => {
+  const [year, month, day] = value.split("-").map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day;
+}, "Ngày không tồn tại.");
+const activeSlotKey = (roomId: string, date: string, startTime: string) => `${roomId}:${date}:${startTime}`;
+const activeUserSlotKey = (userId: string, date: string, startTime: string) => `${userId}:${date}:${startTime}`;
 
-async function audit(actorId: string, action: string, entity: string, entityId: string, metadata?: unknown) {
-  await prisma.auditLog.create({ data: { actorId, action, entity, entityId, metadata: metadata ? JSON.stringify(metadata) : null } });
+async function audit(client: Prisma.TransactionClient | typeof prisma, actorId: string, action: string, entity: string, entityId: string, metadata?: unknown) {
+  await client.auditLog.create({ data: { actorId, action, entity, entityId, metadata: metadata ? JSON.stringify(metadata) : null } });
 }
 
 export function createApp() {
   const app = express();
   app.use(helmet());
-  app.use(cors({ origin: true }));
+  const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://127.0.0.1:5173").split(",").map((origin) => origin.trim()).filter(Boolean);
+  app.use(cors({ origin: (origin, callback) => callback(null, !origin || allowedOrigins.includes(origin)) }));
   app.use(express.json());
   app.use(morgan("tiny"));
 
@@ -47,15 +54,15 @@ export function createApp() {
   app.patch("/auth/me", requireAuth, asyncRoute(async (req, res) => {
     const input = z.object({ name: z.string().trim().min(2).max(80), email: z.string().email() }).parse(req.body);
     const user = await prisma.user.update({ where: { id: req.user!.id }, data: { name: input.name, email: input.email.toLowerCase() }, select: { id: true, name: true, email: true, role: true } });
-    await audit(req.user!.id, "PROFILE_UPDATED", "User", user.id, { name: user.name, email: user.email });
+    await audit(prisma, req.user!.id, "PROFILE_UPDATED", "User", user.id, { name: user.name, email: user.email });
     res.json(user);
   }));
 
   app.get("/rooms", asyncRoute(async (req, res) => {
-    const minCapacity = req.query.minCapacity ? Number(req.query.minCapacity) : undefined;
-    const equipment = typeof req.query.equipment === "string" ? req.query.equipment.split(",").filter(Boolean) : [];
+    const minCapacity = req.query.minCapacity === undefined ? undefined : z.coerce.number().int().min(1).max(500).parse(req.query.minCapacity);
+    const equipment = typeof req.query.equipment === "string" ? [...new Set(req.query.equipment.split(",").map((name) => name.trim()).filter(Boolean))] : [];
     const rooms = await prisma.room.findMany({
-      where: { status: RoomStatus.ACTIVE, ...(Number.isFinite(minCapacity) ? { capacity: { gte: minCapacity } } : {}), ...(equipment.length ? { equipment: { every: { equipment: { name: { in: equipment } } } } } : {}) },
+      where: { status: RoomStatus.ACTIVE, ...(minCapacity === undefined ? {} : { capacity: { gte: minCapacity } }), ...(equipment.length ? { AND: equipment.map((name) => ({ equipment: { some: { equipment: { name } } } })) } : {}) },
       include: { equipment: { include: { equipment: true } } }, orderBy: { name: "asc" }
     });
     res.json(rooms);
@@ -78,11 +85,10 @@ export function createApp() {
       const room = await tx.room.findUnique({ where: { id: input.roomId }, include: { closures: { where: { date: input.date } } } });
       if (!room || room.status !== RoomStatus.ACTIVE) throw new DomainError("ROOM_UNAVAILABLE", "Phòng không khả dụng.");
       if (room.closures.length) throw new DomainError("ROOM_CLOSED", "Phòng đóng vào ngày đã chọn.");
-      const sameStudent = await tx.booking.findFirst({ where: { userId: req.user!.id, date: input.date, startTime: input.startTime, status: { in: bookingStates } } });
-      if (sameStudent) throw new DomainError("STUDENT_CONFLICT", "Bạn đã có lịch đặt trong khung giờ này.");
-      return tx.booking.create({ data: { userId: req.user!.id, roomId: input.roomId, date: input.date, startTime: input.startTime, endTime: endFor(input.startTime) }, include: { room: true } });
+      const booking = await tx.booking.create({ data: { userId: req.user!.id, roomId: input.roomId, date: input.date, startTime: input.startTime, endTime: endFor(input.startTime), activeSlotKey: activeSlotKey(input.roomId, input.date, input.startTime), activeUserSlotKey: activeUserSlotKey(req.user!.id, input.date, input.startTime) }, include: { room: true } });
+      await audit(tx, req.user!.id, "BOOKING_CREATED", "Booking", booking.id, { roomId: booking.roomId, date: booking.date, startTime: booking.startTime });
+      return booking;
     });
-    await audit(req.user!.id, "BOOKING_CREATED", "Booking", booking.id, { roomId: booking.roomId, date: booking.date, startTime: booking.startTime });
     res.status(201).json(booking);
   }));
 
@@ -95,8 +101,11 @@ export function createApp() {
     if (!booking) return res.status(404).json({ error: "BOOKING_NOT_FOUND", message: "Không tìm thấy lịch đặt." });
     if (booking.userId !== req.user!.id) return res.status(403).json({ error: "BOOKING_OWNER_ONLY", message: "Bạn chỉ được hủy lịch của mình." });
     if (booking.status !== BookingStatus.BOOKED || !canCancel(booking.date, booking.startTime)) return res.status(422).json({ error: "CANCELLATION_NOT_ALLOWED", message: "Lịch chỉ được hủy trước giờ bắt đầu ít nhất 60 phút." });
-    const updated = await prisma.booking.update({ where: { id: booking.id }, data: { status: BookingStatus.CANCELLED, cancelledAt: new Date() } });
-    await audit(req.user!.id, "BOOKING_CANCELLED", "Booking", booking.id);
+    const updated = await prisma.$transaction(async (tx) => {
+      const cancelled = await tx.booking.update({ where: { id: booking.id }, data: { status: BookingStatus.CANCELLED, cancelledAt: new Date(), activeSlotKey: null, activeUserSlotKey: null } });
+      await audit(tx, req.user!.id, "BOOKING_CANCELLED", "Booking", booking.id);
+      return cancelled;
+    });
     res.json(updated);
   }));
 
@@ -105,29 +114,32 @@ export function createApp() {
     if (!booking) return res.status(404).json({ error: "BOOKING_NOT_FOUND", message: "Không tìm thấy lịch đặt." });
     if (booking.userId !== req.user!.id) return res.status(403).json({ error: "BOOKING_OWNER_ONLY", message: "Bạn chỉ được check-in lịch của mình." });
     if (booking.status !== BookingStatus.BOOKED || !canCheckIn(booking.date, booking.startTime)) return res.status(422).json({ error: "CHECKIN_NOT_ALLOWED", message: "Chỉ check-in từ 15 phút trước đến 15 phút sau giờ bắt đầu." });
-    const updated = await prisma.booking.update({ where: { id: booking.id }, data: { status: BookingStatus.CHECKED_IN } });
-    await audit(req.user!.id, "BOOKING_CHECKED_IN", "Booking", booking.id);
+    const updated = await prisma.$transaction(async (tx) => {
+      const checkedIn = await tx.booking.update({ where: { id: booking.id }, data: { status: BookingStatus.CHECKED_IN } });
+      await audit(tx, req.user!.id, "BOOKING_CHECKED_IN", "Booking", booking.id);
+      return checkedIn;
+    });
     res.json(updated);
   }));
 
   app.post("/admin/rooms", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ name: z.string().trim().min(2), capacity: z.number().int().min(1).max(500), location: z.string().trim().min(2), equipment: z.array(z.string().trim().min(1)).default([]) }).parse(req.body);
     const room = await prisma.room.create({ data: { name: input.name, capacity: input.capacity, location: input.location, equipment: { create: input.equipment.map((name) => ({ equipment: { connectOrCreate: { where: { name }, create: { name } } } })) } }, include: { equipment: { include: { equipment: true } } } });
-    await audit(req.user!.id, "ROOM_CREATED", "Room", room.id);
+    await audit(prisma, req.user!.id, "ROOM_CREATED", "Room", room.id);
     res.status(201).json(room);
   }));
 
   app.patch("/admin/rooms/:id/status", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ status: z.nativeEnum(RoomStatus) }).parse(req.body);
     const room = await prisma.room.update({ where: { id: String(req.params.id) }, data: { status: input.status } });
-    await audit(req.user!.id, "ROOM_STATUS_CHANGED", "Room", room.id, { status: room.status });
+    await audit(prisma, req.user!.id, "ROOM_STATUS_CHANGED", "Room", room.id, { status: room.status });
     res.json(room);
   }));
 
   app.post("/admin/rooms/:id/closures", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ date: dateSchema, reason: z.string().trim().min(3).max(200) }).parse(req.body);
     const closure = await prisma.roomClosure.create({ data: { roomId: String(req.params.id), ...input } });
-    await audit(req.user!.id, "ROOM_CLOSED", "RoomClosure", closure.id, input);
+    await audit(prisma, req.user!.id, "ROOM_CLOSED", "RoomClosure", closure.id, input);
     res.status(201).json(closure);
   }));
 
@@ -139,7 +151,7 @@ export function createApp() {
     const input = z.object({ role: z.nativeEnum(Role) }).parse(req.body);
     if (String(req.params.id) === req.user!.id && input.role !== Role.ADMIN) throw new DomainError("SELF_ROLE_CHANGE_FORBIDDEN", "Không thể tự gỡ quyền quản trị.");
     const user = await prisma.user.update({ where: { id: String(req.params.id) }, data: input, select: { id: true, name: true, email: true, role: true } });
-    await audit(req.user!.id, "USER_ROLE_CHANGED", "User", user.id, { role: user.role });
+    await audit(prisma, req.user!.id, "USER_ROLE_CHANGED", "User", user.id, { role: user.role });
     res.json(user);
   }));
 
@@ -150,7 +162,7 @@ export function createApp() {
   app.post("/admin/equipment", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ name: z.string().trim().min(2).max(80) }).parse(req.body);
     const equipment = await prisma.equipment.create({ data: input });
-    await audit(req.user!.id, "EQUIPMENT_CREATED", "Equipment", equipment.id, input);
+    await audit(prisma, req.user!.id, "EQUIPMENT_CREATED", "Equipment", equipment.id, input);
     res.status(201).json(equipment);
   }));
 
@@ -158,7 +170,7 @@ export function createApp() {
     const equipment = await prisma.equipment.findUniqueOrThrow({ where: { id: String(req.params.id) }, include: { _count: { select: { rooms: true } } } });
     if (equipment._count.rooms) throw new DomainError("EQUIPMENT_IN_USE", "Không thể xóa thiết bị đang được gán cho phòng.");
     await prisma.equipment.delete({ where: { id: equipment.id } });
-    await audit(req.user!.id, "EQUIPMENT_DELETED", "Equipment", equipment.id, { name: equipment.name });
+    await audit(prisma, req.user!.id, "EQUIPMENT_DELETED", "Equipment", equipment.id, { name: equipment.name });
     res.status(204).end();
   }));
 
@@ -169,7 +181,7 @@ export function createApp() {
   app.patch("/admin/rooms/:id", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ name: z.string().trim().min(2).optional(), capacity: z.number().int().min(1).max(500).optional(), location: z.string().trim().min(2).optional(), status: z.nativeEnum(RoomStatus).optional() }).refine((value) => Object.keys(value).length > 0, "Cần ít nhất một trường để cập nhật.").parse(req.body);
     const room = await prisma.room.update({ where: { id: String(req.params.id) }, data: input });
-    await audit(req.user!.id, "ROOM_UPDATED", "Room", room.id, input);
+    await audit(prisma, req.user!.id, "ROOM_UPDATED", "Room", room.id, input);
     res.json(room);
   }));
 
@@ -185,7 +197,7 @@ export function createApp() {
       if (input.equipmentIds.length) await tx.roomEquipment.createMany({ data: [...new Set(input.equipmentIds)].map((equipmentId) => ({ roomId, equipmentId })) });
       return tx.room.findUniqueOrThrow({ where: { id: roomId }, include: { equipment: { include: { equipment: true } } } });
     });
-    await audit(req.user!.id, "ROOM_EQUIPMENT_UPDATED", "Room", room.id, { equipmentIds: input.equipmentIds });
+    await audit(prisma, req.user!.id, "ROOM_EQUIPMENT_UPDATED", "Room", room.id, { equipmentIds: input.equipmentIds });
     res.json(room);
   }));
 
@@ -195,7 +207,7 @@ export function createApp() {
 
   app.delete("/admin/closures/:id", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const closure = await prisma.roomClosure.delete({ where: { id: String(req.params.id) } });
-    await audit(req.user!.id, "ROOM_CLOSURE_DELETED", "RoomClosure", closure.id, { roomId: closure.roomId, date: closure.date });
+    await audit(prisma, req.user!.id, "ROOM_CLOSURE_DELETED", "RoomClosure", closure.id, { roomId: closure.roomId, date: closure.date });
     res.status(204).end();
   }));
   app.get("/admin/bookings", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
@@ -205,22 +217,46 @@ export function createApp() {
 
   app.patch("/admin/bookings/:id/status", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ status: z.nativeEnum(BookingStatus) }).parse(req.body);
-    const booking = await prisma.booking.update({ where: { id: String(req.params.id) }, data: { status: input.status, ...(input.status === BookingStatus.CANCELLED ? { cancelledAt: new Date() } : {}) }, include: { room: true, user: { select: { id: true, name: true, email: true } } } });
-    await audit(req.user!.id, "BOOKING_STATUS_CHANGED", "Booking", booking.id, { status: booking.status });
+    const current = await prisma.booking.findUniqueOrThrow({ where: { id: String(req.params.id) } });
+    const allowedTargetStatuses = new Set<BookingStatus>([BookingStatus.CANCELLED, BookingStatus.CHECKED_IN, BookingStatus.NO_SHOW]);
+    if (current.status !== BookingStatus.BOOKED || !allowedTargetStatuses.has(input.status)) {
+      throw new DomainError("INVALID_BOOKING_TRANSITION", "Chỉ booking BOOKED mới được chuyển sang CANCELLED, CHECKED_IN hoặc NO_SHOW.");
+    }
+    const isActive = input.status === BookingStatus.CHECKED_IN;
+    const booking = await prisma.$transaction(async (tx) => {
+      const updated = await tx.booking.update({ where: { id: current.id }, data: { status: input.status, ...(input.status === BookingStatus.CANCELLED ? { cancelledAt: new Date() } : {}), ...(isActive ? {} : { activeSlotKey: null, activeUserSlotKey: null }) }, include: { room: true, user: { select: { id: true, name: true, email: true } } } });
+      await audit(tx, req.user!.id, "BOOKING_STATUS_CHANGED", "Booking", updated.id, { status: updated.status });
+      return updated;
+    });
     res.json(booking);
   }));
 
-  app.get("/admin/reports/usage", requireAuth, requireAdmin, asyncRoute(async (_req, res) => {
-    const bookings = await prisma.booking.findMany({ where: { status: { in: [BookingStatus.BOOKED, BookingStatus.CHECKED_IN, BookingStatus.NO_SHOW] } }, include: { room: true } });
+  app.get("/admin/reports/usage", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
+    const today = new Date();
+    const defaultFrom = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const defaultTo = new Date(defaultFrom); defaultTo.setDate(defaultTo.getDate() + 14);
+    const formatDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const from = dateSchema.parse(req.query.from ?? formatDate(defaultFrom));
+    const to = dateSchema.parse(req.query.to ?? formatDate(defaultTo));
+    if (from > to) throw new DomainError("INVALID_REPORT_RANGE", "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.");
+    const activeRooms = await prisma.room.findMany({ where: { status: RoomStatus.ACTIVE }, include: { closures: { where: { date: { gte: from, lte: to } } } } });
+    const bookings = await prisma.booking.findMany({ where: { date: { gte: from, lte: to }, status: { in: [BookingStatus.BOOKED, BookingStatus.CHECKED_IN, BookingStatus.NO_SHOW] }, room: { status: RoomStatus.ACTIVE } }, include: { room: true } });
     const roomCounts = bookings.reduce<Record<string, { roomName: string; bookings: number }>>((acc, booking) => { acc[booking.roomId] ??= { roomName: booking.room.name, bookings: 0 }; acc[booking.roomId].bookings += 1; return acc; }, {});
-    const activeRooms = await prisma.room.count({ where: { status: RoomStatus.ACTIVE } });
-    res.json({ totals: { bookings: bookings.length, checkedIn: bookings.filter((b) => b.status === BookingStatus.CHECKED_IN).length, noShow: bookings.filter((b) => b.status === BookingStatus.NO_SHOW).length, occupancyRate: activeRooms ? Number((bookings.length / (activeRooms * 14 * 14) * 100).toFixed(2)) : 0 }, rooms: Object.values(roomCounts).sort((a, b) => b.bookings - a.bookings) });
+    const days = Math.floor((Date.parse(`${to}T00:00:00`) - Date.parse(`${from}T00:00:00`)) / 86_400_000) + 1;
+    const availableSlots = activeRooms.reduce((total, room) => total + (days - room.closures.length) * 14, 0);
+    res.json({ range: { from, to }, totals: { bookings: bookings.length, checkedIn: bookings.filter((b) => b.status === BookingStatus.CHECKED_IN).length, noShow: bookings.filter((b) => b.status === BookingStatus.NO_SHOW).length, occupancyRate: availableSlots ? Number(Math.min(100, bookings.length / availableSlots * 100).toFixed(2)) : 0 }, rooms: Object.values(roomCounts).sort((a, b) => b.bookings - a.bookings) });
   }));
 
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     if (error instanceof z.ZodError) return res.status(422).json({ error: "VALIDATION_ERROR", details: error.flatten() });
     if (error instanceof DomainError) return res.status(422).json({ error: error.code, message: error.message });
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return res.status(409).json({ error: "BOOKING_CONFLICT", message: "Phòng đã có lịch trong khung giờ này." });
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const target = Array.isArray(error.meta?.target) ? error.meta.target.join(",") : String(error.meta?.target || "");
+      if (target.includes("activeUserSlotKey")) return res.status(409).json({ error: "STUDENT_CONFLICT", message: "Bạn đã có lịch đặt trong khung giờ này." });
+      if (target.includes("activeSlotKey")) return res.status(409).json({ error: "BOOKING_CONFLICT", message: "Phòng đã có lịch trong khung giờ này." });
+      if (target.includes("email")) return res.status(409).json({ error: "EMAIL_EXISTS", message: "Email đã được sử dụng." });
+      return res.status(409).json({ error: "DUPLICATE_RESOURCE", message: "Dữ liệu trùng với bản ghi đã có." });
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") return res.status(404).json({ error: "NOT_FOUND", message: "Không tìm thấy dữ liệu." });
     console.error(error);
     return res.status(500).json({ error: "INTERNAL_ERROR", message: "Có lỗi hệ thống xảy ra." });

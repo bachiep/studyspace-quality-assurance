@@ -30,7 +30,7 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 | `Room` | tên, sức chứa, vị trí, trạng thái | Tên duy nhất; trạng thái `ACTIVE` hoặc `INACTIVE`. |
 | `Equipment` | tên thiết bị | Tên duy nhất; liên kết phòng qua `RoomEquipment`. |
 | `RoomClosure` | phòng, ngày, lý do | Duy nhất theo phòng và ngày. |
-| `Booking` | người đặt, phòng, ngày, start/end time, trạng thái | Duy nhất theo room, ngày, giờ bắt đầu; trạng thái `BOOKED`, `CANCELLED`, `CHECKED_IN`, `NO_SHOW`. |
+| `Booking` | người đặt, phòng, ngày, start/end time, trạng thái | Duy nhất theo room/ngày/giờ và user/ngày/giờ **khi còn active** (`BOOKED`/`CHECKED_IN`); lịch sử `CANCELLED`/`NO_SHOW` vẫn được giữ. |
 | `AuditLog` | tác nhân, hành động, thực thể, metadata, thời điểm | Ghi nhận thao tác nghiệp vụ quan trọng. |
 
 ### 3.2 Quy tắc booking
@@ -40,8 +40,8 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 | BR-BOOK-01 | Một slot kéo dài 60 phút. Giờ bắt đầu hợp lệ `07:00` đến `20:00`; giờ kết thúc tương ứng `08:00` đến `21:00`. |
 | BR-BOOK-02 | Ngày có dạng `YYYY-MM-DD`, từ ngày hiện tại đến tối đa 14 ngày tới, và slot không được nằm trong quá khứ. |
 | BR-BOOK-03 | Chỉ phòng `ACTIVE` không có closure trong ngày được chọn mới được đặt. |
-| BR-BOOK-04 | Không có hai booking cùng phòng/ngày/giờ bắt đầu. Unique constraint là lớp bảo vệ cuối cùng cho yêu cầu đồng thời. |
-| BR-BOOK-05 | Một Student không giữ hai booking `BOOKED` hoặc `CHECKED_IN` cùng ngày và giờ bắt đầu. |
+| BR-BOOK-04 | Không có hai booking active cùng phòng/ngày/giờ bắt đầu. Unique active-slot constraint là lớp bảo vệ cuối cùng cho yêu cầu đồng thời. |
+| BR-BOOK-05 | Một Student không giữ hai booking `BOOKED` hoặc `CHECKED_IN` cùng ngày và giờ bắt đầu; active-user-slot constraint bảo vệ khi request đồng thời. |
 | BR-BOOK-06 | Chỉ hủy booking của mình khi còn `BOOKED` và còn ít nhất 60 phút trước giờ bắt đầu. |
 | BR-BOOK-07 | Chỉ check-in booking của mình khi còn `BOOKED`, trong cửa sổ từ 15 phút trước đến 15 phút sau giờ bắt đầu. |
 | BR-ROOM-01 | Phòng có lịch sử không bị xóa qua chức năng quản trị; `INACTIVE` dùng để ngừng nhận booking mới. |
@@ -64,7 +64,7 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 | REQ-BOOK-03 | Xem lịch sử | Student chỉ xem booking của mình, kèm thông tin phòng, sắp ngày/giờ tăng dần. |
 | REQ-BOOK-04 | Hủy và check-in | Student chỉ hủy/check-in booking của mình theo BR-BOOK-06/07; thao tác thành công có audit. |
 | REQ-REPORT-01 | Vận hành người dùng và booking | Admin xem người dùng/booking, thay đổi role người dùng khác và trạng thái booking; thay đổi được audit. |
-| REQ-REPORT-02 | Báo cáo sử dụng | Admin xem tổng booking, check-in, no-show, occupancy rate và phòng theo lượt booking giảm dần. |
+| REQ-REPORT-02 | Báo cáo sử dụng | Admin xem tổng booking, check-in, no-show, occupancy rate và phòng theo lượt booking giảm dần trong khoảng ngày báo cáo. |
 
 ## 5. Đặc tả use case
 
@@ -144,8 +144,8 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 - **Tác nhân:** Student hoặc Admin đã đăng nhập.
 - **Tiền điều kiện:** JWT hợp lệ; room active; ngày/slot hợp lệ; room không đóng; không xung đột.
 - **Kích hoạt:** Người dùng xác nhận room/date/startTime.
-- **Luồng chính:** (1) Xác thực JWT, kiểm tra dữ liệu. (2) Kiểm tra slot 07:00–20:00, ngày trong 14 ngày và chưa qua. (3) Trong transaction, lấy room/closure, kiểm tra active và không đóng. (4) Kiểm tra booking `BOOKED`/`CHECKED_IN` cùng người dùng, ngày, giờ. (5) Tạo booking `BOOKED`, end time sau 60 phút; unique constraint bảo vệ room/date/startTime. (6) Ghi `BOOKING_CREATED`, trả `201` và room của booking.
-- **Luồng thay thế/ngoại lệ:** Token thiếu/sai `401`; dữ liệu định dạng sai `422`; ngày/slot sai, quá hạn hoặc đã qua `422`; room thiếu/inactive `422` `ROOM_UNAVAILABLE`; room đóng `422` `ROOM_CLOSED`; Student trùng slot `422` `STUDENT_CONFLICT`; request đồng thời cùng room/date/slot `409` `BOOKING_CONFLICT`.
+- **Luồng chính:** (1) Xác thực JWT, kiểm tra dữ liệu và ngày có thực. (2) Kiểm tra slot 07:00–20:00, ngày trong 14 ngày và chưa qua. (3) Trong transaction, lấy room/closure, kiểm tra active và không đóng. (4) Tạo booking `BOOKED`, end time sau 60 phút, cùng hai khóa active: room/date/slot và user/date/slot. (5) Ghi `BOOKING_CREATED` trong cùng transaction, trả `201` và room của booking.
+- **Luồng thay thế/ngoại lệ:** Token thiếu/sai `401`; dữ liệu định dạng sai hoặc ngày không tồn tại `422`; ngày/slot sai, quá hạn hoặc đã qua `422`; room thiếu/inactive `422` `ROOM_UNAVAILABLE`; room đóng `422` `ROOM_CLOSED`; request đồng thời trùng Student/slot `409` `STUDENT_CONFLICT`; request đồng thời cùng room/date/slot `409` `BOOKING_CONFLICT`.
 - **Hậu điều kiện:** Thành công tạo đúng một booking cho room/date/startTime và audit log; thất bại không tạo booking dở dang.
 
 ### UC-BOOK-02 — Xem lịch sử booking cá nhân
@@ -166,7 +166,7 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 - **Kích hoạt:** Người dùng yêu cầu hủy booking.
 - **Luồng chính:** (1) Xác thực và tìm booking. (2) Kiểm tra chủ sở hữu, trạng thái `BOOKED`, thời gian còn lại ít nhất 60 phút. (3) Đổi trạng thái `CANCELLED`, lưu `cancelledAt`. (4) Ghi `BOOKING_CANCELLED`, trả `200`.
 - **Luồng thay thế/ngoại lệ:** Token sai `401`; booking không có `404`; booking người khác `403`; không còn `BOOKED` hoặc dưới 60 phút `422` `CANCELLATION_NOT_ALLOWED`.
-- **Hậu điều kiện:** Booking hợp lệ đã `CANCELLED`; audit log được tạo.
+- **Hậu điều kiện:** Booking hợp lệ đã `CANCELLED`; hai khóa active được gỡ trong cùng transaction để slot có thể được đặt lại; audit log được tạo.
 
 ### UC-BOOK-04 — Check-in booking
 
@@ -194,8 +194,8 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 - **Tác nhân:** Admin.
 - **Tiền điều kiện:** JWT hợp lệ có vai trò `ADMIN`.
 - **Kích hoạt:** Admin mở dashboard báo cáo.
-- **Luồng chính:** (1) Lấy booking `BOOKED`, `CHECKED_IN`, `NO_SHOW`; bỏ `CANCELLED`. (2) Tính tổng booking, check-in, no-show. (3) Tính `occupancyRate = bookings / (phòng ACTIVE × 14 ngày × 14 slot) × 100`, làm tròn hai chữ số; không có phòng active thì bằng 0. (4) Gom/sắp phòng theo lượt booking giảm dần và trả `200`.
-- **Luồng thay thế/ngoại lệ:** Token sai `401`; Student `403`; không có booking hợp lệ thì tổng bằng 0 và danh sách phòng rỗng.
+- **Luồng chính:** (1) Nhận khoảng `from`/`to`; mặc định từ hôm nay đến 14 ngày tới, và từ không sau đến. (2) Lấy booking `BOOKED`, `CHECKED_IN`, `NO_SHOW` trong khoảng; bỏ `CANCELLED`. (3) Tính tổng booking, check-in, no-show. (4) Tính số slot có thể dùng theo từng phòng `ACTIVE` và từng ngày trong khoảng, trừ ngày closure; `occupancyRate = bookings / possibleSlots × 100`, làm tròn hai chữ số và chặn tối đa 100. (5) Gom/sắp phòng theo lượt booking giảm dần, trả range và `200`.
+- **Luồng thay thế/ngoại lệ:** Token sai `401`; Student `403`; range sai hoặc ngày không tồn tại `422`; không có booking hợp lệ thì tổng bằng 0 và danh sách phòng rỗng.
 - **Hậu điều kiện:** Không thay đổi dữ liệu.
 
 ## 6. Yêu cầu phi chức năng và kiểm định

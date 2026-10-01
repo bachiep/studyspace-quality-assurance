@@ -3,7 +3,16 @@ import jwt from "jsonwebtoken";
 import type { NextFunction, Request, Response } from "express";
 import { Role } from "@prisma/client";
 
-const secret = () => process.env.JWT_SECRET || "studyspace-development-secret-change-me";
+const developmentSecret = "studyspace-development-secret-change-me";
+const secret = () => {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === "production") throw new Error("JWT_SECRET must be configured in production.");
+  return developmentSecret;
+};
+
+export function assertAuthenticationConfiguration() {
+  secret();
+}
 
 export function createToken(user: { id: string; email: string; role: Role }) {
   return jwt.sign({ email: user.email, role: user.role }, secret(), { subject: user.id, expiresIn: "8h" });

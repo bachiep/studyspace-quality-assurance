@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { api, Booking, Room, Session } from "./api";
 
 const slots = Array.from({ length: 14 }, (_, index) => `${String(index + 7).padStart(2, "0")}:00`);
-const dateAfter = (days = 1) => { const date = new Date(); date.setDate(date.getDate() + days); return date.toISOString().slice(0, 10); };
+const formatLocalDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+const dateAfter = (days = 1) => { const date = new Date(); date.setDate(date.getDate() + days); return formatLocalDate(date); };
 
 function Notice({ message, type = "error" }: { message: string; type?: "error" | "success" }) {
   return <p role="alert" className={`rounded-xl px-3 py-2 text-sm ${type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>{message}</p>;
@@ -16,16 +17,20 @@ export function BookingPanel({ session }: { session: Session }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState<{ room: Room; startTime: string } | null>(null);
+  const [minimumCapacity, setMinimumCapacity] = useState("");
+  const [equipmentFilter, setEquipmentFilter] = useState("");
 
   const load = async () => {
     setLoading(true);
     try {
       const [roomData, bookingData] = await Promise.all([api.availability(date), api.myBookings(session.token)]);
-      setRooms(roomData); setBookings(bookingData);
+      const requiredEquipment = equipmentFilter.split(",").map((name) => name.trim().toLocaleLowerCase()).filter(Boolean);
+      const minimum = minimumCapacity ? Number(minimumCapacity) : 0;
+      setRooms(roomData.filter((room) => room.capacity >= minimum && requiredEquipment.every((name) => room.equipment.some((item) => item.equipment.name.toLocaleLowerCase() === name)))); setBookings(bookingData);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không tải được dữ liệu."); }
     finally { setLoading(false); }
   };
-  useEffect(() => { void load(); }, [date]);
+  useEffect(() => { void load(); }, [date, minimumCapacity, equipmentFilter]);
 
   async function reserve() {
     if (!pending) return;
@@ -40,6 +45,7 @@ export function BookingPanel({ session }: { session: Session }) {
   return <div className="grid gap-6 xl:grid-cols-[1fr_330px]">
     <section className="card p-5 md:p-6">
       <div className="flex flex-wrap items-end justify-between gap-4"><div><h2 className="text-xl font-bold">Tìm phòng trống</h2><p className="text-sm text-slate-500">Chọn slot còn trống để xem lại thông tin trước khi đặt.</p></div><label><span className="label">Ngày học</span><input className="field" value={date} min={dateAfter(0)} max={dateAfter(14)} type="date" onChange={(event) => setDate(event.target.value)} /></label></div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2"><label><span className="label">Sức chứa tối thiểu</span><input className="field" aria-label="Sức chứa tối thiểu" min="1" type="number" value={minimumCapacity} onChange={(event) => setMinimumCapacity(event.target.value)} placeholder="Ví dụ: 10" /></label><label><span className="label">Thiết bị cần có</span><input className="field" aria-label="Thiết bị cần có" value={equipmentFilter} onChange={(event) => setEquipmentFilter(event.target.value)} placeholder="Máy chiếu, Bảng trắng" /></label></div>
       {message && <div className="mt-4"><Notice type="success" message={message} /></div>}{error && <div className="mt-4"><Notice message={error} /></div>}
       {loading ? <p className="py-12 text-center text-slate-500">Đang tìm không gian phù hợp...</p> : <div className="mt-6 space-y-4">{rooms.length === 0 ? <p className="rounded-xl bg-slate-50 p-6 text-center text-slate-500">Chưa có phòng hoạt động.</p> : rooms.map((room) => <article className="rounded-2xl border border-slate-200 p-4" key={room.id}><div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-bold">Phòng {room.name} <span className="ml-2 rounded-full bg-brand/10 px-2 py-1 text-xs text-brand">{room.capacity} chỗ</span></h3><p className="mt-1 text-sm text-slate-500">{room.location} · {room.equipment.map((item) => item.equipment.name).join(" · ") || "Thiết bị cơ bản"}</p></div><span className={`text-sm font-semibold ${room.available ? "text-emerald-600" : "text-rose-600"}`}>{room.available ? "Đang mở" : "Đóng phòng"}</span></div><div className="mt-4 flex flex-wrap gap-2">{slots.map((slot) => { const unavailable = !room.available || room.occupiedSlots?.includes(slot); return <button key={slot} disabled={unavailable} onClick={() => setPending({ room, startTime: slot })} className={`rounded-lg px-3 py-2 text-sm font-semibold ${unavailable ? "cursor-not-allowed bg-slate-100 text-slate-400 line-through" : "bg-indigo-50 text-brand hover:bg-brand hover:text-white"}`}>{slot}</button>; })}</div></article>)}</div>}
     </section>

@@ -19,11 +19,12 @@ Xác minh StudySpace đáp ứng SRS, đặc biệt tại các điểm rủi ro:
 
 | Rủi ro | Giảm thiểu |
 |---|---|
-| Race condition | DB unique constraint + transaction + concurrent API test |
+| Race condition | Hai unique active-key + transaction + concurrent API test cho room và Student |
 | Bypass admin | Middleware JWT/RBAC; kiểm thử 401/403 cho toàn bộ endpoint admin |
-| Lệch thời gian | Date/slot policy là pure function và unit test tại biên |
-| Sai báo cáo | Test booking status riêng, aggregate chỉ dùng status nghiệp vụ hợp lệ |
+| Lệch thời gian | Date/slot policy là pure function, kiểm tra ngày có thực và unit test tại biên |
+| Sai báo cáo | Range xác định, trừ closure khỏi mẫu số và chỉ aggregate status nghiệp vụ hợp lệ |
 | Mất lịch sử | Không xóa room có lịch sử; dùng status `INACTIVE` |
+| Sai migration/test lẫn dữ liệu local | Reset database test cô lập bằng Prisma migrations trước mỗi suite unit/API và E2E |
 
 ## Defect workflow
 
@@ -31,9 +32,8 @@ New → Triaged → In Progress → Ready for retest → Verified → Closed. M�
 
 ## Baseline đã xác minh
 
-- Vitest: 33/33 pass (5 unit, 28 API).
-- `src/domain/booking-policy.ts`: 100% line/branch coverage.
-- Tổng coverage backend: 96.55% line, 88.68% branch, 100% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
+- Vitest: 35/35 pass (5 unit, 30 API).
+- Tổng coverage backend: 94.77% line, 88.46% branch, 92.85% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
 - StrykerJS: 68 mutants, 52 killed, 11 survived, 5 compile-error; mutation score 82.54%, đạt ngưỡng 60%.
 - Playwright Chromium: 9/9 pass, gồm luồng student, admin report, RBAC/error UI, đăng ký, chuyển góc nhìn, lịch sử hủy, quản lý thiết bị, cập nhật hồ sơ và axe không có vi phạm serious/critical ở trang đăng nhập.
 - Lighthouse production: Performance 100, Accessibility 100, Best Practices 96.

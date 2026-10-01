@@ -30,6 +30,13 @@ describe.sequential("StudySpace API", () => {
     expect(response.body).toEqual({ status: "ok" });
   });
 
+  it("only grants CORS access to configured local frontend origins", async () => {
+    const allowed = await request(app).get("/health").set("origin", "http://localhost:5173");
+    const rejected = await request(app).get("/health").set("origin", "https://untrusted.example");
+    expect(allowed.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
+    expect(rejected.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
   it("requires authentication for booking", async () => {
     const response = await request(app).post("/bookings").send({ roomId, date: futureDate, startTime: "10:00" });
     expect(response.status).toBe(401);
@@ -70,12 +77,13 @@ describe.sequential("StudySpace API", () => {
     const cancelled = await request(app).patch(`/bookings/${created.body.id}/cancel`).set("authorization", `Bearer ${studentToken}`);
     expect(cancelled.status).toBe(200); expect(cancelled.body.status).toBe("CANCELLED");
     expect(await prisma.auditLog.count({ where: { action: "BOOKING_CANCELLED" } })).toBe(1);
+    await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "13:00" }).expect(201);
   });
 
   it("returns admin usage metrics from real booking data", async () => {
     await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "14:00" }).expect(201);
-    const response = await request(app).get("/admin/reports/usage").set("authorization", `Bearer ${adminToken}`);
-    expect(response.status).toBe(200); expect(response.body.totals.bookings).toBe(1); expect(response.body.rooms[0]).toMatchObject({ roomName: "A101", bookings: 1 });
+    const response = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${futureDate}`).set("authorization", `Bearer ${adminToken}`);
+    expect(response.status).toBe(200); expect(response.body.range).toEqual({ from: futureDate, to: futureDate }); expect(response.body.totals).toMatchObject({ bookings: 1, occupancyRate: 7.14 }); expect(response.body.rooms[0]).toMatchObject({ roomName: "A101", bookings: 1 });
   });
 
   it("registers, logs in and returns the authenticated profile", async () => {
@@ -106,6 +114,8 @@ describe.sequential("StudySpace API", () => {
     expect(created.status).toBe(201); expect(created.body.equipment[0].equipment.name).toBe("Máy chiếu");
     const response = await request(app).get("/rooms?minCapacity=15&equipment=M%C3%A1y%20chi%E1%BA%BFu");
     expect(response.body).toHaveLength(1); expect(response.body[0].name).toBe("B202");
+    const projectorRooms = await request(app).get("/rooms?equipment=M%C3%A1y%20chi%E1%BA%BFu");
+    expect(projectorRooms.body.map((room: { name: string }) => room.name)).toEqual(["B202"]);
   });
 
   it("validates public availability dates and excludes rooms that do not meet capacity", async () => {
@@ -115,6 +125,16 @@ describe.sequential("StudySpace API", () => {
     const rooms = await request(app).get("/rooms?minCapacity=99");
     expect(rooms.status).toBe(200);
     expect(rooms.body).toEqual([]);
+    await request(app).get("/rooms?minCapacity=not-a-number").expect(422);
+    await request(app).get("/rooms/availability?date=2026-02-31").expect(422);
+  });
+
+  it("rejects concurrent bookings by the same student in different rooms", async () => {
+    const secondRoom = await prisma.room.create({ data: { name: "B102", capacity: 10, location: "B1" } });
+    const reserve = (targetRoomId: string) => request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId: targetRoomId, date: futureDate, startTime: "10:00" });
+    const results = await Promise.all([reserve(roomId), reserve(secondRoom.id)]);
+    expect(results.map((result) => result.status).sort()).toEqual([201, 409]);
+    expect(results.find((result) => result.status === 409)?.body.error).toBe("STUDENT_CONFLICT");
   });
 
   it("protects booking ownership and exposes booking lists to their intended roles", async () => {
@@ -207,6 +227,9 @@ describe.sequential("StudySpace API", () => {
     const response = await request(app).patch(`/admin/bookings/${created.body.id}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "NO_SHOW" });
     expect(response.status).toBe(200); expect(response.body.status).toBe("NO_SHOW");
     expect(await prisma.auditLog.count({ where: { action: "BOOKING_STATUS_CHANGED" } })).toBe(1);
+    await request(app).patch(`/admin/bookings/${created.body.id}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "BOOKED" }).expect(422);
+    const secondStudent = await prisma.user.create({ data: { name: "Student Two", email: "student2@test.local", passwordHash: await hashPassword("Password123!") } });
+    await request(app).post("/bookings").set("authorization", `Bearer ${createToken(secondStudent)}`).send({ roomId, date: futureDate, startTime: "17:00" }).expect(201);
   });
 
   it("validates administrative booking filters and status changes", async () => {

@@ -4,8 +4,8 @@
 
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
-| Unit + API (Vitest) | 33/33 pass (5 unit, 28 API) | `backend/tests`, `backend/coverage` |
-| Coverage V8 | 96.55% line, 88.68% branch, 100% function | `backend/coverage` |
+| Unit + API (Vitest) | 35/35 pass (5 unit, 30 API) | `backend/tests`, `backend/coverage` |
+| Coverage V8 | 94.77% line, 88.46% branch, 92.85% function | `backend/coverage` |
 | Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
 | E2E Chromium | 9/9 pass | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |
@@ -16,9 +16,9 @@
 
 ## Quyết định chất lượng
 
-- Booking concurrent được test: một request 201, request còn lại 409; SQLite unique constraint và transaction là biện pháp phòng ngừa.
+- Booking concurrent được test cả theo phòng và theo Student: một request 201, request còn lại 409; hai unique active-key và transaction là biện pháp phòng ngừa.
 - RBAC đã có test 401/403 và API admin chỉ nhận token ADMIN.
-- Token hết hạn bị từ chối và Helmet phát security headers; bằng chứng API nằm trong `backend/tests/api.spec.ts`.
+- Token hết hạn bị từ chối, Helmet phát security headers và CORS chỉ cấp cho origin frontend được cấu hình; bằng chứng API nằm trong `backend/tests/api.spec.ts`.
 - Phòng có lịch sử được chuyển `INACTIVE`, không xóa dữ liệu nghiệp vụ.
 - Axe và Lighthouse production đạt ngưỡng accessibility/best practices đã đặt.
 - ZAP production baseline không có alert High/Medium/Low; hai informational alert được giữ nguyên trong report.
