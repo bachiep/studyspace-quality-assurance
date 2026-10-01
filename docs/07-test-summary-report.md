@@ -4,8 +4,8 @@
 
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
-| Unit + API (Vitest) | 36/36 pass (5 unit, 31 API) | `backend/tests`, `backend/coverage` |
-| Coverage V8 | 94.89% line, 89.05% branch, 93.33% function | `backend/coverage` |
+| Unit + API (Vitest) | 37/37 pass (5 unit, 32 API) | `backend/tests`, `backend/coverage` |
+| Coverage V8 | 94.89% line, 89.78% branch, 93.33% function | `backend/coverage` |
 | Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
 | E2E Chromium | 18/18 pass trên Desktop Chrome và Pixel 5 | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |

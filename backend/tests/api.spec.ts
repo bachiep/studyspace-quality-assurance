@@ -91,6 +91,9 @@ describe.sequential("StudySpace API", () => {
     await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "14:00" }).expect(201);
     const response = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${futureDate}`).set("authorization", `Bearer ${adminToken}`);
     expect(response.status).toBe(200); expect(response.body.range).toEqual({ from: futureDate, to: futureDate }); expect(response.body.totals).toMatchObject({ bookings: 1, occupancyRate: 7.14 }); expect(response.body.rooms[0]).toMatchObject({ roomName: "A101", bookings: 1 });
+    const previousDate = new Date(`${futureDate}T00:00:00`); previousDate.setDate(previousDate.getDate() - 1);
+    const invalidRange = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${previousDate.toISOString().slice(0, 10)}`).set("authorization", `Bearer ${adminToken}`);
+    expect(invalidRange.status).toBe(422); expect(invalidRange.body.error).toBe("INVALID_REPORT_RANGE");
   });
 
   it("registers, logs in and returns the authenticated profile", async () => {
