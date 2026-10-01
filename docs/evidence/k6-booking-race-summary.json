@@ -1,0 +1,13 @@
+{
+  "tool": "k6",
+  "scenario": "booking-race",
+  "vus": 20,
+  "requests": 22,
+  "bookingCreated": 1,
+  "bookingConflict": 19,
+  "expectedOutcomeRate": 1,
+  "errorRate": 0,
+  "p95Milliseconds": 292.09,
+  "exitCode": 0,
+  "status": "passed"
+}

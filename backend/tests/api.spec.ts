@@ -60,6 +60,13 @@ describe.sequential("StudySpace API", () => {
     expect(results.map((result) => result.status).sort()).toEqual([201, 409]);
   });
 
+  it("returns only success or conflicts when twenty requests race for one booking", async () => {
+    const reserve = () => request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "19:00" });
+    const results = await Promise.all(Array.from({ length: 20 }, reserve));
+    expect(results.filter((result) => result.status === 201)).toHaveLength(1);
+    expect(results.filter((result) => result.status === 409)).toHaveLength(19);
+  });
+
   it("hides inactive rooms from public availability", async () => {
     await request(app).patch(`/admin/rooms/${roomId}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "INACTIVE" }).expect(200);
     const response = await request(app).get(`/rooms/availability?date=${futureDate}`);

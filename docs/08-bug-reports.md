@@ -56,5 +56,5 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 | Expected result | Database phải chặn cả room active-slot và Student active-slot khi cạnh tranh; hủy/no-show giải phóng slot mà không mất lịch sử. |
 | Cách sửa | Thêm `activeSlotKey` và `activeUserSlotKey` unique, tạo/cập nhật chúng trong transaction cùng audit log, xóa khóa khi CANCELLED/NO_SHOW; bổ sung migration và API tests. |
 | Fix commit | [`80d474c`](https://github.com/bachiep/studyspace-quality-assurance/commit/80d474cf06de159bca7dce6be36ceedaad5cf130) |
-| Retest | `TC-API-04`, `TC-API-07`, `TC-API-19`, `TC-API-29`; kết quả 35/35 unit/API và CI quality pass. |
+| Retest | `TC-API-04`, `TC-API-07`, `TC-API-19`, `TC-API-29`, `TC-NF-02`; kết quả 36/36 unit/API và k6 booking race pass. |
 | Trạng thái | Closed / Retested |

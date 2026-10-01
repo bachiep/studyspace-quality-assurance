@@ -33,4 +33,6 @@ npm run e2e
 
 `npm test`, `npm run test:mutation` và `npm run e2e` luôn reset database kiểm thử `backend/prisma/test.db` bằng Prisma migrations trước khi chạy; không tác động database phát triển.
 
+Để chạy k6 booking race trên database test sạch, chạy `npm run db:seed:e2e`, khởi động backend với `DATABASE_URL=file:./test.db`, sau đó chạy `k6 run tests/non-functional/performance/booking-race.js`. Kịch bản yêu cầu đúng 1 response `201` và 19 response `409`.
+
 Tài liệu kiểm định nằm trong [`docs`](docs/README.md). Kết quả sinh tự động phải để trong `reports/generated/` và không commit secrets hoặc database cục bộ.

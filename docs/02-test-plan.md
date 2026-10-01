@@ -19,7 +19,7 @@ Xác minh StudySpace đáp ứng SRS, đặc biệt tại các điểm rủi ro:
 
 | Rủi ro | Giảm thiểu |
 |---|---|
-| Race condition | Hai unique active-key + transaction + concurrent API test cho room và Student |
+| Race condition | Hai unique active-key + transaction + concurrent API test; SQLite single-instance tuần tự hóa write booking; k6 xác minh 1 success/19 conflict |
 | Bypass admin | Middleware JWT/RBAC; kiểm thử 401/403 cho toàn bộ endpoint admin |
 | Lệch thời gian | Date/slot policy là pure function, kiểm tra ngày có thực và unit test tại biên |
 | Sai báo cáo | Range xác định, trừ closure khỏi mẫu số và chỉ aggregate status nghiệp vụ hợp lệ |
@@ -32,11 +32,12 @@ New → Triaged → In Progress → Ready for retest → Verified → Closed. M�
 
 ## Baseline đã xác minh
 
-- Vitest: 35/35 pass (5 unit, 30 API).
-- Tổng coverage backend: 94.77% line, 88.46% branch, 92.85% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
+- Vitest: 36/36 pass (5 unit, 31 API).
+- Tổng coverage backend: 94.89% line, 88.88% branch, 93.33% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
 - StrykerJS: 68 mutants, 52 killed, 11 survived, 5 compile-error; mutation score 82.54%, đạt ngưỡng 60%.
 - Playwright Chromium: 18/18 pass trên Desktop Chrome và Pixel 5, gồm luồng student, admin report, RBAC/error UI, đăng ký, chuyển góc nhìn, lịch sử hủy, quản lý thiết bị, cập nhật hồ sơ và axe không có vi phạm serious/critical ở trang đăng nhập.
 - Lighthouse production: Performance 100, Accessibility 100, Best Practices 96.
 - k6 availability: 20 VUs/2 phút, 2.382 requests, error rate 0%, p95 17.47 ms; CLI exit code 0 and both thresholds passed.
+- k6 booking race: 20 VUs đồng thời, 1 response `201`, 19 response `409`, error rate 0%, p95 292.09 ms; exit code 0.
 - OWASP ZAP 2.17.0 production preview: 0 High, 0 Medium, 0 Low, 2 Informational.
 - Backend TypeScript và frontend Vite production build pass.

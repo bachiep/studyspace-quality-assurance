@@ -17,6 +17,13 @@ const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày phải theo YY
 }, "Ngày không tồn tại.");
 const activeSlotKey = (roomId: string, date: string, startTime: string) => `${roomId}:${date}:${startTime}`;
 const activeUserSlotKey = (userId: string, date: string, startTime: string) => `${userId}:${date}:${startTime}`;
+let bookingWriteTail: Promise<void> = Promise.resolve();
+
+function serializeBookingWrite<T>(work: () => Promise<T>) {
+  const operation = bookingWriteTail.then(work, work);
+  bookingWriteTail = operation.then(() => undefined, () => undefined);
+  return operation;
+}
 
 async function audit(client: Prisma.TransactionClient | typeof prisma, actorId: string, action: string, entity: string, entityId: string, metadata?: unknown) {
   await client.auditLog.create({ data: { actorId, action, entity, entityId, metadata: metadata ? JSON.stringify(metadata) : null } });
@@ -81,14 +88,14 @@ export function createApp() {
   app.post("/bookings", requireAuth, asyncRoute(async (req, res) => {
     const input = z.object({ roomId: z.string().min(1), date: dateSchema, startTime: z.string() }).parse(req.body);
     validateSlot(input.startTime); validateBookingDate(input.date); validateNotPast(input.date, input.startTime);
-    const booking = await prisma.$transaction(async (tx) => {
+    const booking = await serializeBookingWrite(() => prisma.$transaction(async (tx) => {
       const room = await tx.room.findUnique({ where: { id: input.roomId }, include: { closures: { where: { date: input.date } } } });
       if (!room || room.status !== RoomStatus.ACTIVE) throw new DomainError("ROOM_UNAVAILABLE", "Phòng không khả dụng.");
       if (room.closures.length) throw new DomainError("ROOM_CLOSED", "Phòng đóng vào ngày đã chọn.");
       const booking = await tx.booking.create({ data: { userId: req.user!.id, roomId: input.roomId, date: input.date, startTime: input.startTime, endTime: endFor(input.startTime), activeSlotKey: activeSlotKey(input.roomId, input.date, input.startTime), activeUserSlotKey: activeUserSlotKey(req.user!.id, input.date, input.startTime) }, include: { room: true } });
       await audit(tx, req.user!.id, "BOOKING_CREATED", "Booking", booking.id, { roomId: booking.roomId, date: booking.date, startTime: booking.startTime });
       return booking;
-    });
+    }));
     res.status(201).json(booking);
   }));
 
