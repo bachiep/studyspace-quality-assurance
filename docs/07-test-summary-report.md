@@ -9,7 +9,7 @@
 | Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
 | E2E Chromium | 20/20 pass trên Desktop Chrome và Pixel 5 | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |
-| Lighthouse production | Performance 100; Accessibility 100; Best Practices 96; SEO 82 | `reports/generated/lighthouse-production.report.html` |
+| Lighthouse production (full categories) | Performance 100; Accessibility 100; Best Practices 96; SEO 82 | `docs/evidence/lighthouse-production-summary.json` |
 | k6 availability | 20 VUs/2 phút; 2,382 requests; 19.69 req/s; error 0%; p95 17.47 ms; exit 0 | `reports/generated/k6-final-summary.json` |
 | k6 booking race | 20 VUs; 1 response 201, 19 response 409; error 0%; p95 292.09 ms; exit 0 | `docs/evidence/k6-booking-race-summary.json` |
 | OWASP ZAP production baseline | 0 High, 0 Medium, 0 Low, 2 Informational | `reports/generated/zap/baseline-production.html` |

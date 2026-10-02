@@ -37,7 +37,7 @@ New → Triaged → In Progress → Ready for retest → Verified → Closed. M�
 - Tổng coverage backend: 95.15% line, 90.27% branch, 94.11% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%; số liệu và lệnh chạy lưu tại `docs/evidence/coverage-summary.json`.
 - StrykerJS: 68 mutants, 52 killed, 11 survived, 5 compile-error; mutation score 82.54%, đạt ngưỡng 60%.
 - Playwright Chromium: 20/20 pass trên Desktop Chrome và Pixel 5, gồm luồng student, admin report, RBAC/error UI, đăng ký, chuyển góc nhìn, lịch sử hủy, quản lý thiết bị, cập nhật hồ sơ, lọc phòng theo sức chứa/thiết bị và axe không có vi phạm serious/critical ở trang đăng nhập.
-- Lighthouse production: Performance 100, Accessibility 100, Best Practices 96.
+- Lighthouse production (full categories): Performance 100, Accessibility 100, Best Practices 96, SEO 82; scope và số liệu lưu tại `docs/evidence/lighthouse-production-summary.json`.
 - k6 availability: 20 VUs/2 phút, 2.382 requests, error rate 0%, p95 17.47 ms; CLI exit code 0 and both thresholds passed.
 - k6 booking race: 20 VUs đồng thời, 1 response `201`, 19 response `409`, error rate 0%, p95 292.09 ms; exit code 0.
 - OWASP ZAP 2.17.0 production preview: 0 High, 0 Medium, 0 Low, 2 Informational.

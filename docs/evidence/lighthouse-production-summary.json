@@ -1,0 +1,15 @@
+{
+  "tool": "Lighthouse",
+  "version": "13.5.0",
+  "fetchedAt": "2026-10-01T05:04:29.723Z",
+  "target": "http://127.0.0.1:5173/",
+  "scope": "full default categories",
+  "scores": {
+    "performance": 100,
+    "accessibility": 100,
+    "bestPractices": 96,
+    "seo": 82
+  },
+  "status": "passed",
+  "sourceReport": "reports/generated/lighthouse-production.report.json"
+}
