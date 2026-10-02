@@ -52,6 +52,23 @@ describe.sequential("StudySpace API", () => {
     expect(rejected.headers["access-control-allow-origin"]).toBeUndefined();
   });
 
+  it("rate limits repeated unsuccessful login attempts", async () => {
+    const previousLimit = process.env.AUTH_RATE_LIMIT_MAX;
+    process.env.AUTH_RATE_LIMIT_MAX = "2";
+    try {
+      const rateLimitedApp = createApp();
+      const attempt = () => request(rateLimitedApp).post("/auth/login").send({ email: "student@test.local", password: "wrong-password" });
+      await attempt().expect(401);
+      await attempt().expect(401);
+      const limited = await attempt();
+      expect(limited.status).toBe(429);
+      expect(limited.body.error).toBe("AUTH_RATE_LIMITED");
+    } finally {
+      if (previousLimit === undefined) delete process.env.AUTH_RATE_LIMIT_MAX;
+      else process.env.AUTH_RATE_LIMIT_MAX = previousLimit;
+    }
+  });
+
   it("requires authentication for booking", async () => {
     const response = await request(app).post("/bookings").send({ roomId, date: futureDate, startTime: "10:00" });
     expect(response.status).toBe(401);

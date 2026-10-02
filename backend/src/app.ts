@@ -1,6 +1,7 @@
 import { BookingStatus, Prisma, Role, RoomStatus } from "@prisma/client";
 import cors from "cors";
 import express from "express";
+import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
 import { z } from "zod";
@@ -19,6 +20,11 @@ const activeSlotKey = (roomId: string, date: string, startTime: string) => `${ro
 const activeUserSlotKey = (userId: string, date: string, startTime: string) => `${userId}:${date}:${startTime}`;
 let bookingWriteTail: Promise<void> = Promise.resolve();
 
+function positiveIntegerSetting(value: string | undefined, fallback: number, maximum: number) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 && parsed <= maximum ? parsed : fallback;
+}
+
 function serializeBookingWrite<T>(work: () => Promise<T>) {
   const operation = bookingWriteTail.then(work, work);
   bookingWriteTail = operation.then(() => undefined, () => undefined);
@@ -33,6 +39,14 @@ export function createApp() {
   const app = express();
   app.use(helmet());
   const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://127.0.0.1:5173").split(",").map((origin) => origin.trim()).filter(Boolean);
+  const loginLimiter = rateLimit({
+    windowMs: positiveIntegerSetting(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000, 86_400_000),
+    limit: positiveIntegerSetting(process.env.AUTH_RATE_LIMIT_MAX, 5, 100),
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    skipSuccessfulRequests: true,
+    handler: (_req, res) => res.status(429).json({ error: "AUTH_RATE_LIMITED", message: "Có quá nhiều lần đăng nhập không thành công. Vui lòng thử lại sau." })
+  });
   app.use(cors({ origin: (origin, callback) => callback(null, !origin || allowedOrigins.includes(origin)) }));
   app.use(express.json());
   app.use(morgan("tiny"));
@@ -46,7 +60,7 @@ export function createApp() {
     res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   }));
 
-  app.post("/auth/login", asyncRoute(async (req, res) => {
+  app.post("/auth/login", loginLimiter, asyncRoute(async (req, res) => {
     const input = z.object({ email: z.string().email(), password: z.string().min(1) }).parse(req.body);
     const user = await prisma.user.findUnique({ where: { email: input.email.toLowerCase() } });
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) return res.status(401).json({ error: "INVALID_CREDENTIALS", message: "Email hoặc mật khẩu không chính xác." });
