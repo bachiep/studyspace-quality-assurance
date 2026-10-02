@@ -1,0 +1,19 @@
+{
+  "verifiedAt": "2026-10-02",
+  "commit": "8a516df",
+  "environment": "Windows local clean directory",
+  "steps": [
+    "git clone --depth 1 https://github.com/bachiep/studyspace-quality-assurance.git",
+    "Copy-Item backend/.env.example backend/.env",
+    "npm ci",
+    "npm run db:generate",
+    "npm run build"
+  ],
+  "result": "passed",
+  "checks": {
+    "dependenciesInstalled": true,
+    "prismaClientGenerated": true,
+    "backendTypeScriptBuild": true,
+    "frontendViteBuild": true
+  }
+}

@@ -14,6 +14,7 @@
 | k6 booking race | 20 VUs; 1 response 201, 19 response 409; error 0%; p95 292.09 ms; exit 0 | `docs/evidence/k6-booking-race-summary.json` |
 | OWASP ZAP production baseline | 0 High, 0 Medium, 0 Low, 2 Informational | `reports/generated/zap/baseline-production.html` |
 | Runtime dependency audit | 0 High/critical vulnerabilities (`--omit=dev --omit=optional`) | CI security step |
+| Fresh-clone bootstrap | `npm ci`, Prisma generate và production build pass từ clone sạch tại `8a516df` | `docs/evidence/fresh-clone-verification.json` |
 | Database migration isolation | Migrations áp thành công từ database test trắng trước unit/API và E2E | Console test, CI quality run |
 
 ## Quyết định chất lượng
