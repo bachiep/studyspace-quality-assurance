@@ -71,8 +71,26 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 | Retest | `TC-API-04`, `TC-API-07`, `TC-API-19`, `TC-API-29`; kết quả 36/36 unit/API pass. |
 | Trạng thái | Closed / Retested |
 
+## BUG-005 — Tạo closure cho phòng không tồn tại không giữ not-found contract
+
+| Trường | Nội dung |
+|---|---|
+| Nguồn | [GitHub issue #9](https://github.com/bachiep/studyspace-quality-assurance/issues/9) — Closed |
+| Severity | Medium |
+| Phân hệ | Quản lý lịch đóng phòng |
+| Requirement liên quan | REQ-ROOM-05 |
+| Môi trường phát hiện | Review API contract với SQLite |
+| Bước tái hiện | Gọi `POST /admin/rooms/missing-room/closures` bằng JWT Admin, với ngày và lý do hợp lệ. |
+| Actual result | Tầng tạo closure dựa vào lỗi khóa ngoại của database; response có thể thành `500` thay vì lỗi nghiệp vụ công khai. |
+| Expected result | Trả `404` với `error: NOT_FOUND` và không tạo closure. |
+| Cách sửa | Kiểm tra room tồn tại bằng `findUniqueOrThrow` trước khi tạo closure, để dùng error handler `P2025` chuẩn hóa `404`; thêm `TC-API-34`. |
+| Fix commit | [`7e827d6`](https://github.com/bachiep/studyspace-quality-assurance/commit/7e827d65bafde9260a4894b630fc4092ebb54496) |
+| Retest | `TC-API-34` pass; CI run [36946619870](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36946619870) success. |
+| Trạng thái | Closed / Retested |
+
 ## Quy ước truy vết
 
 - `BUG-001` được liên kết với `REQ-BOOK-01` trong RTM và với `TC-E2E-01` trong test-case catalog.
 - `BUG-002` chỉ liên kết với evidence CI trong báo cáo lỗi vì không thay đổi một yêu cầu chức năng của SUT.
 - `BUG-003` và `BUG-004` liên kết với REQ-BOOK-02, test API concurrent và k6 booking race trong RTM.
+- `BUG-005` liên kết với REQ-ROOM-05 và `TC-API-34` trong RTM.
