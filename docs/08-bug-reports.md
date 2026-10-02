@@ -88,9 +88,27 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 | Retest | `TC-API-34` pass; CI run [36946619870](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36946619870) success. |
 | Trạng thái | Closed / Retested |
 
+## BUG-006 — Đăng nhập cho phép thử mật khẩu lặp lại không giới hạn
+
+| Trường | Nội dung |
+|---|---|
+| Nguồn | [GitHub issue #10](https://github.com/bachiep/studyspace-quality-assurance/issues/10) — Closed |
+| Severity | High |
+| Phân hệ | Xác thực |
+| Requirement liên quan | REQ-AUTH-02 |
+| Môi trường phát hiện | Review security API trên backend single-instance |
+| Bước tái hiện | Gửi liên tiếp request `POST /auth/login` với email hợp lệ và mật khẩu sai từ cùng client. |
+| Actual result | Mọi request đều trả `401`; không có giới hạn số lần thử mật khẩu. |
+| Expected result | Vượt ngưỡng request đăng nhập không thành công phải trả `429` `AUTH_RATE_LIMITED`; ngưỡng và cửa sổ phải cấu hình được. |
+| Cách sửa | Áp dụng `express-rate-limit` cho login với mặc định 5 lần/15 phút, `skipSuccessfulRequests`, header chuẩn và response JSON nhất quán; thêm `TC-API-35`. |
+| Fix commit | [`d214619`](https://github.com/bachiep/studyspace-quality-assurance/commit/d2146197cdd9d53621b1531244c0f8b194d470c2) |
+| Retest | `TC-API-35` pass; CI run [36950200003](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36950200003) success. |
+| Trạng thái | Closed / Retested |
+
 ## Quy ước truy vết
 
 - `BUG-001` được liên kết với `REQ-BOOK-01` trong RTM và với `TC-E2E-01` trong test-case catalog.
 - `BUG-002` chỉ liên kết với evidence CI trong báo cáo lỗi vì không thay đổi một yêu cầu chức năng của SUT.
 - `BUG-003` và `BUG-004` liên kết với REQ-BOOK-02, test API concurrent và k6 booking race trong RTM.
 - `BUG-005` liên kết với REQ-ROOM-05 và `TC-API-34` trong RTM.
+- `BUG-006` liên kết với REQ-AUTH-02 và `TC-API-35` trong RTM.

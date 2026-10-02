@@ -4,8 +4,8 @@
 
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
-| Unit + API (Vitest) | 38/38 pass (5 unit, 33 API/configuration) | `backend/tests`, `docs/evidence/coverage-summary.json`; CI run 36946619870 |
-| Coverage V8 | 94.92% line, 89.78% branch, 93.33% function | `docs/evidence/coverage-summary.json` |
+| Unit + API (Vitest) | 39/39 pass (5 unit, 34 API/configuration) | `backend/tests`, `docs/evidence/coverage-summary.json`; CI run 36950200003 |
+| Coverage V8 | 95.15% line, 90.27% branch, 94.11% function | `docs/evidence/coverage-summary.json` |
 | Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
 | E2E Chromium | 20/20 pass trên Desktop Chrome và Pixel 5 | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |
@@ -22,6 +22,7 @@
 - Booking concurrent được test cả theo phòng và theo Student: k6 xác minh 20 request cho đúng 1 response 201 và 19 response 409; hai unique active-key, transaction và hàng đợi write SQLite là biện pháp phòng ngừa.
 - RBAC đã có test 401/403 và API admin chỉ nhận token ADMIN.
 - Token hết hạn bị từ chối, Helmet phát security headers và CORS chỉ cấp cho origin frontend được cấu hình; bằng chứng API nằm trong `backend/tests/api.spec.ts`.
+- Login không thành công bị giới hạn theo client; ngưỡng/cửa sổ cấu hình qua môi trường và vượt ngưỡng trả `429` `AUTH_RATE_LIMITED`.
 - Phòng có lịch sử được chuyển `INACTIVE`, không xóa dữ liệu nghiệp vụ.
 - Axe và Lighthouse production đạt ngưỡng accessibility/best practices đã đặt.
 - Luồng E2E chạy tuần tự qua desktop/mobile để cùng database test không tạo xung đột giả giữa các project.

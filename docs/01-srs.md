@@ -51,7 +51,7 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 | ID | Yêu cầu | Tiêu chí chấp nhận có thể kiểm chứng |
 |---|---|---|
 | REQ-AUTH-01 | Đăng ký tài khoản Student | Tên 2–80 ký tự, email hợp lệ, mật khẩu 8–72 ký tự; password được hash; trả JWT và hồ sơ công khai. |
-| REQ-AUTH-02 | Đăng nhập và xác thực phiên | Thông tin hợp lệ trả JWT hạn 8 giờ; thông tin sai và token thiếu/hết hạn/sai trả `401`. |
+| REQ-AUTH-02 | Đăng nhập và xác thực phiên | Thông tin hợp lệ trả JWT hạn 8 giờ; thông tin sai và token thiếu/hết hạn/sai trả `401`; request đăng nhập không thành công vượt ngưỡng cấu hình trả `429` `AUTH_RATE_LIMITED`. |
 | REQ-AUTH-03 | Hồ sơ người dùng | Người dùng đã đăng nhập xem/cập nhật tên, email của mình; thay đổi được audit. |
 | REQ-AUTH-04 | Phân quyền | Student bị chặn khỏi `/admin/*`; Admin không tự hạ quyền của mình. |
 | REQ-ROOM-01 | Tra cứu phòng công khai | Chỉ trả phòng `ACTIVE`; hỗ trợ lọc sức chứa tối thiểu và danh sách tên thiết bị. |
@@ -85,7 +85,7 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 - **Tiền điều kiện:** Tài khoản đã tồn tại.
 - **Kích hoạt:** Khách gửi email và mật khẩu.
 - **Luồng chính:** (1) Kiểm tra định dạng. (2) Tìm email đã chuẩn hóa và so sánh mật khẩu với hash. (3) Tạo JWT hạn 8 giờ, trả `200`, token và hồ sơ công khai.
-- **Luồng thay thế/ngoại lệ:** Dữ liệu sai định dạng trả `422`; email không tồn tại hoặc mật khẩu không khớp trả `401` với cùng thông báo.
+- **Luồng thay thế/ngoại lệ:** Dữ liệu sai định dạng trả `422`; email không tồn tại hoặc mật khẩu không khớp trả `401` với cùng thông báo. Trên một instance, request đăng nhập không thành công vượt ngưỡng `AUTH_RATE_LIMIT_MAX` trong cửa sổ `AUTH_RATE_LIMIT_WINDOW_MS` trả `429` `AUTH_RATE_LIMITED`; mặc định là 5 lần/15 phút.
 - **Hậu điều kiện:** Không thay đổi dữ liệu; người dùng có token để gọi API cần xác thực.
 
 ### UC-AUTH-03 — Xem và cập nhật hồ sơ
@@ -202,7 +202,7 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 
 | Nhóm | Yêu cầu kiểm chứng |
 |---|---|
-| Bảo mật | bcrypt, JWT/RBAC, Zod validation, HTTP security headers; ZAP không có finding High. |
+| Bảo mật | bcrypt, JWT/RBAC, Zod validation, HTTP security headers và giới hạn request đăng nhập không thành công; ZAP không có finding High. |
 | Tin cậy | Transaction và unique constraint chứng minh một cặp request đồng thời chỉ có một thành công, request còn lại `409`. |
 | Hiệu năng | Kịch bản k6 công bố p95, error rate, throughput từ report sinh bởi lần chạy thật. |
 | Khả dụng | Giao diện responsive; evidence accessibility/Lighthouse được lưu. |
