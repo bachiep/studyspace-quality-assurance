@@ -105,6 +105,23 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 | Retest | `TC-API-35` xác minh chuỗi `401 → 200 → 401 → 429`; CI run [36951865239](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36951865239) success. |
 | Trạng thái | Closed / Retested |
 
+## BUG-007 — Thiếu coverage API cho check-in hợp lệ
+
+| Trường | Nội dung |
+|---|---|
+| Nguồn | [GitHub issue #11](https://github.com/bachiep/studyspace-quality-assurance/issues/11) — Closed |
+| Severity | Medium |
+| Phân hệ | Booking check-in |
+| Requirement liên quan | REQ-BOOK-04 |
+| Môi trường phát hiện | Review test suite |
+| Bước tái hiện | Kiểm tra các test API của endpoint `PATCH /bookings/:id/check-in`. |
+| Actual result | Suite chỉ chứng minh trường hợp bị từ chối ngoài cửa sổ thời gian; chưa có bằng chứng API cho check-in thành công. |
+| Expected result | Có test cố định thời gian trong cửa sổ hợp lệ, kiểm tra HTTP 200, trạng thái `CHECKED_IN` và audit log. |
+| Cách sửa | Thêm `TC-API-36`, cố định thời gian 08:50, tạo booking 09:00 và xác minh check-in thành công cùng audit `BOOKING_CHECKED_IN`. |
+| Fix commit | [`b38d2f5`](https://github.com/bachiep/studyspace-quality-assurance/commit/b38d2f5) |
+| Retest | `TC-API-36` pass; CI run [36953349825](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36953349825) success. |
+| Trạng thái | Closed / Retested |
+
 ## Quy ước truy vết
 
 - `BUG-001` được liên kết với `REQ-BOOK-01` trong RTM và với `TC-E2E-01` trong test-case catalog.
@@ -112,3 +129,4 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 - `BUG-003` và `BUG-004` liên kết với REQ-BOOK-02, test API concurrent và k6 booking race trong RTM.
 - `BUG-005` liên kết với REQ-ROOM-05 và `TC-API-34` trong RTM.
 - `BUG-006` liên kết với REQ-AUTH-02 và `TC-API-35` trong RTM.
+- `BUG-007` liên kết với REQ-BOOK-04 và `TC-API-36` trong RTM.

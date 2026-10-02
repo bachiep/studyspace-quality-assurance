@@ -5,15 +5,15 @@
   "result": "passed",
   "testFiles": 2,
   "tests": {
-    "total": 39,
-    "passed": 39,
+    "total": 40,
+    "passed": 40,
     "unit": 5,
-    "apiAndConfiguration": 34
+    "apiAndConfiguration": 35
   },
   "coverage": {
-    "statements": 95.15,
-    "lines": 95.15,
-    "branches": 90.27,
+    "statements": 97.23,
+    "lines": 97.23,
+    "branches": 91.09,
     "functions": 94.11
   },
   "thresholds": {

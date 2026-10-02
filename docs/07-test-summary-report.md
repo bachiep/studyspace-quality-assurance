@@ -4,8 +4,8 @@
 
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
-| Unit + API (Vitest) | 39/39 pass (5 unit, 34 API/configuration) | `backend/tests`, `docs/evidence/coverage-summary.json`; CI run 36951865239 |
-| Coverage V8 | 95.15% line, 90.27% branch, 94.11% function | `docs/evidence/coverage-summary.json` |
+| Unit + API (Vitest) | 40/40 pass (5 unit, 35 API/configuration) | `backend/tests`, `docs/evidence/coverage-summary.json`; CI run [36953349825](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36953349825) |
+| Coverage V8 | 97.23% line, 91.09% branch, 94.11% function | `docs/evidence/coverage-summary.json` |
 | Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
 | E2E Chromium | 20/20 pass trên Desktop Chrome và Pixel 5 | `reports/generated/playwright` |
 | Axe login | 0 vi phạm serious/critical | Playwright report |
