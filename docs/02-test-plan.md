@@ -11,7 +11,7 @@ Xác minh StudySpace đáp ứng SRS, đặc biệt tại các điểm rủi ro:
 | Unit | Vitest, V8 coverage, Stryker | Domain policy ≥85% line, ≥70% branch; mutation ≥60% |
 | API | Supertest + SQLite test database | Mỗi endpoint có một ca dương và âm |
 | E2E | Playwright | 7 luồng student/admin ổn định trên Chromium |
-| Security | ZAP baseline + checklist + API auth abuse control | Không còn finding High; vượt ngưỡng login trả `429` |
+| Security | ZAP baseline + [checklist](11-security-checklist.md) + API auth abuse control | Không còn finding High; vượt ngưỡng login trả `429` |
 | Performance | k6 | 20 VUs/2 phút, error rate <1%, lưu p95 |
 | Usability | Lighthouse + axe | A11y ≥90, Best Practices ≥90, Performance desktop ≥80 |
 
