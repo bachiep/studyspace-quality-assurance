@@ -4,7 +4,7 @@
 
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
-| Unit + API (Vitest) | 39/39 pass (5 unit, 34 API/configuration) | `backend/tests`, `docs/evidence/coverage-summary.json`; CI run 36950200003 |
+| Unit + API (Vitest) | 39/39 pass (5 unit, 34 API/configuration) | `backend/tests`, `docs/evidence/coverage-summary.json`; CI run 36951865239 |
 | Coverage V8 | 95.15% line, 90.27% branch, 94.11% function | `docs/evidence/coverage-summary.json` |
 | Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
 | E2E Chromium | 20/20 pass trên Desktop Chrome và Pixel 5 | `reports/generated/playwright` |

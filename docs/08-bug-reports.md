@@ -102,7 +102,7 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 | Expected result | Vượt ngưỡng request đăng nhập không thành công phải trả `429` `AUTH_RATE_LIMITED`; ngưỡng và cửa sổ phải cấu hình được. |
 | Cách sửa | Áp dụng `express-rate-limit` cho login với mặc định 5 lần/15 phút, `skipSuccessfulRequests`, header chuẩn và response JSON nhất quán; thêm `TC-API-35`. |
 | Fix commit | [`d214619`](https://github.com/bachiep/studyspace-quality-assurance/commit/d2146197cdd9d53621b1531244c0f8b194d470c2) |
-| Retest | `TC-API-35` pass; CI run [36950200003](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36950200003) success. |
+| Retest | `TC-API-35` xác minh chuỗi `401 → 200 → 401 → 429`; CI run [36951865239](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36951865239) success. |
 | Trạng thái | Closed / Retested |
 
 ## Quy ước truy vết
