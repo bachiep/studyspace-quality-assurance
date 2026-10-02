@@ -32,8 +32,8 @@ New → Triaged → In Progress → Ready for retest → Verified → Closed. M�
 
 ## Baseline đã xác minh
 
-- Vitest: 39/39 pass (5 unit, 34 API/configuration).
-- Tổng coverage backend: 94.89% line, 89.78% branch, 93.33% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
+- Vitest: 38/38 pass (5 unit, 33 API/configuration).
+- Tổng coverage backend: 94.92% line, 89.78% branch, 93.33% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
 - StrykerJS: 68 mutants, 52 killed, 11 survived, 5 compile-error; mutation score 82.54%, đạt ngưỡng 60%.
 - Playwright Chromium: 20/20 pass trên Desktop Chrome và Pixel 5, gồm luồng student, admin report, RBAC/error UI, đăng ký, chuyển góc nhìn, lịch sử hủy, quản lý thiết bị, cập nhật hồ sơ, lọc phòng theo sức chứa/thiết bị và axe không có vi phạm serious/critical ở trang đăng nhập.
 - Lighthouse production: Performance 100, Accessibility 100, Best Practices 96.
