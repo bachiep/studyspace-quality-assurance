@@ -59,6 +59,7 @@ describe.sequential("StudySpace API", () => {
       const rateLimitedApp = createApp();
       const attempt = () => request(rateLimitedApp).post("/auth/login").send({ email: "student@test.local", password: "wrong-password" });
       await attempt().expect(401);
+      await request(rateLimitedApp).post("/auth/login").send({ email: "student@test.local", password: "Password123!" }).expect(200);
       await attempt().expect(401);
       const limited = await attempt();
       expect(limited.status).toBe(429);
