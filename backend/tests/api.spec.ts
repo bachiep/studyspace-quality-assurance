@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import request from "supertest";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createApp } from "../src/app.js";
 import { assertAuthenticationConfiguration, createToken, hashPassword } from "../src/auth.js";
 import { prisma } from "../src/db.js";
@@ -191,6 +191,20 @@ describe.sequential("StudySpace API", () => {
     const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "16:00" }).expect(201);
     const response = await request(app).patch(`/bookings/${created.body.id}/check-in`).set("authorization", `Bearer ${studentToken}`);
     expect(response.status).toBe(422); expect(response.body.error).toBe("CHECKIN_NOT_ALLOWED");
+  });
+
+  it("allows an owner to check in during the configured time window", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-02T08:50:00"));
+    try {
+      const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: "2026-10-02", startTime: "09:00" }).expect(201);
+      const response = await request(app).patch(`/bookings/${created.body.id}/check-in`).set("authorization", `Bearer ${studentToken}`);
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe("CHECKED_IN");
+      expect(await prisma.auditLog.count({ where: { action: "BOOKING_CHECKED_IN" } })).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
   it("returns not-found contracts for booking actions", async () => {
     const cancel = await request(app).patch("/bookings/missing-booking/cancel").set("authorization", `Bearer ${studentToken}`);
