@@ -202,6 +202,16 @@ describe.sequential("StudySpace API", () => {
     expect(selfDemotion.body.error).toBe("SELF_ROLE_CHANGE_FORBIDDEN");
   });
 
+  it("returns the standard not-found contract when creating a closure for an unknown room", async () => {
+    const response = await request(app)
+      .post("/admin/rooms/missing-room/closures")
+      .set("authorization", `Bearer ${adminToken}`)
+      .send({ date: futureDate, reason: "Bảo trì phòng" });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("NOT_FOUND");
+  });
+
   it("manages unused equipment and protects equipment attached to a room", async () => {
     const created = await request(app).post("/admin/equipment").set("authorization", `Bearer ${adminToken}`).send({ name: "Loa" }).expect(201);
     expect((await request(app).get("/admin/equipment").set("authorization", `Bearer ${adminToken}`)).body[0].name).toBe("Loa");

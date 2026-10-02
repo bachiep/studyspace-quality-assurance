@@ -145,7 +145,9 @@ export function createApp() {
 
   app.post("/admin/rooms/:id/closures", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ date: dateSchema, reason: z.string().trim().min(3).max(200) }).parse(req.body);
-    const closure = await prisma.roomClosure.create({ data: { roomId: String(req.params.id), ...input } });
+    const roomId = String(req.params.id);
+    await prisma.room.findUniqueOrThrow({ where: { id: roomId }, select: { id: true } });
+    const closure = await prisma.roomClosure.create({ data: { roomId, ...input } });
     await audit(prisma, req.user!.id, "ROOM_CLOSED", "RoomClosure", closure.id, input);
     res.status(201).json(closure);
   }));
