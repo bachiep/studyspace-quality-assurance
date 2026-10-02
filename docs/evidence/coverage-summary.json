@@ -1,0 +1,25 @@
+{
+  "tool": "Vitest V8 coverage",
+  "verifiedAt": "2026-10-02",
+  "command": "npm run test --workspace backend",
+  "result": "passed",
+  "testFiles": 2,
+  "tests": {
+    "total": 38,
+    "passed": 38,
+    "unit": 5,
+    "apiAndConfiguration": 33
+  },
+  "coverage": {
+    "statements": 94.92,
+    "lines": 94.92,
+    "branches": 89.78,
+    "functions": 93.33
+  },
+  "thresholds": {
+    "statements": 85,
+    "lines": 85,
+    "branches": 70,
+    "functions": 85
+  }
+}
