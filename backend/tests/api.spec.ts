@@ -359,5 +359,8 @@ describe.sequential("StudySpace API", () => {
     expect(health.headers["x-frame-options"]).toBe("SAMEORIGIN");
     expect(health.headers["content-security-policy"]).toBe("default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; img-src 'self' data:; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self'");
     expect(health.headers["permissions-policy"]).toBe("camera=(), microphone=(), geolocation=()");
+    const missing = await request(app).get("/missing-security-test");
+    expect(missing.status).toBe(404);
+    expect(missing.headers["content-security-policy"]).toBe(health.headers["content-security-policy"]);
   });
 });

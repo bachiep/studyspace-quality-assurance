@@ -18,6 +18,7 @@ const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày phải theo YY
 }, "Ngày không tồn tại.");
 const activeSlotKey = (roomId: string, date: string, startTime: string) => `${roomId}:${date}:${startTime}`;
 const activeUserSlotKey = (userId: string, date: string, startTime: string) => `${userId}:${date}:${startTime}`;
+const apiContentSecurityPolicy = "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; img-src 'self' data:; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self'";
 let bookingWriteTail: Promise<void> = Promise.resolve();
 
 function positiveIntegerSetting(value: string | undefined, fallback: number, maximum: number) {
@@ -41,7 +42,7 @@ export function createApp() {
     contentSecurityPolicy: false
   }));
   app.use((_req, res, next) => {
-    res.setHeader("Content-Security-Policy", "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; img-src 'self' data:; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self'");
+    res.setHeader("Content-Security-Policy", apiContentSecurityPolicy);
     res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
     next();
   });
@@ -304,6 +305,12 @@ export function createApp() {
     const utilizationRate = availableSlots ? Number(Math.min(100, checkedIn / availableSlots * 100).toFixed(2)) : 0;
     res.json({ range: { from, to }, totals: { bookings: bookings.length, checkedIn, noShow: bookings.filter((b) => b.status === BookingStatus.NO_SHOW).length, reservationRate, utilizationRate, occupancyRate: reservationRate }, rooms: Object.values(roomCounts).sort((a, b) => b.bookings - a.bookings) });
   }));
+
+  app.use((_req, res) => {
+    res.setHeader("Content-Security-Policy", apiContentSecurityPolicy);
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    res.status(404).json({ error: "NOT_FOUND", message: "Không tìm thấy tài nguyên." });
+  });
 
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     if (error instanceof z.ZodError) return res.status(422).json({ error: "VALIDATION_ERROR", details: error.flatten() });
