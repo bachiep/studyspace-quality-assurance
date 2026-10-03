@@ -54,9 +54,18 @@ jobs:
       - name: Lighthouse production report
         run: |
           mkdir -p reports/generated/lighthouse
+          set +e
           npx lighthouse http://127.0.0.1:5173 --chrome-flags="--headless --no-sandbox" --only-categories=performance,accessibility,best-practices --output=json --output-path=reports/generated/lighthouse/report.json
+          json_code=$?
           npx lighthouse http://127.0.0.1:5173 --chrome-flags="--headless --no-sandbox" --only-categories=performance,accessibility,best-practices --output=html --output-path=reports/generated/lighthouse/report.html
-          node scripts/validate-lighthouse.mjs reports/generated/lighthouse/report.json
+          html_code=$?
+          validation_code=1
+          if [ "$json_code" -eq 0 ] && [ "$html_code" -eq 0 ]; then
+            node scripts/validate-lighthouse.mjs reports/generated/lighthouse/report.json
+            validation_code=$?
+          fi
+          printf '%s\n' "$validation_code" > reports/generated/lighthouse/validation-exit-code
+          set -e
 
       - name: ZAP passive baseline for frontend and public API
         run: |
@@ -83,6 +92,18 @@ jobs:
           path: reports/generated
           if-no-files-found: error
           retention-days: 90
+      - name: Enforce evidence thresholds
+        if: always()
+        run: |
+          if [ ! -f reports/generated/lighthouse/validation-exit-code ]; then
+            echo "Lighthouse validation did not produce a result."
+            exit 1
+          fi
+          code="$(cat reports/generated/lighthouse/validation-exit-code)"
+          if [ "$code" -ne 0 ]; then
+            echo "Lighthouse threshold validation failed with exit code $code."
+            exit "$code"
+          fi
       - name: Attach evidence bundle to tagged release
         if: startsWith(github.ref, 'refs/tags/')
         env:
