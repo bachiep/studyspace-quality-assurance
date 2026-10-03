@@ -14,7 +14,7 @@ Checklist này ghi nhận phạm vi đã kiểm tra của StudySpace. “Đạt�
 | Error contract | Prisma duplicate/not-found và domain errors được chuẩn hóa, không trả stack trace cho client. | `TC-API-04`, `TC-API-34`, ZAP baseline | Đạt trong phạm vi test |
 | Secrets | `.env` và database cục bộ bị loại khỏi Git; `.env.example` không có secret thật. | `.gitignore`, `backend/.env.example` | Đạt |
 | Dependency risk | Audit runtime dependency không có High/Critical. | CI security step | Đạt |
-| Dynamic scan | Final ZAP baseline phải có JSON frontend/API gắn với commit và workflow; bản summary cũ trong `docs/evidence` chỉ là historical, không dùng để kết luận final. | `quality-evidence.yml`, final manifest | Chưa đánh giá final |
+| Dynamic scan | ZAP baseline JSON frontend/API gắn với commit và workflow; High alert phải bằng 0. | `quality-evidence.yml`, `docs/evidence/final/manifest.json`, run 37127614831 | Đạt gate High = 0; frontend 0M, API 3M cần phân tích |
 
 ## Giới hạn đã biết
 

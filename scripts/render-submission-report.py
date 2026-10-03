@@ -28,8 +28,8 @@ OUTPUT = ROOT / "output" / "pdf" / "StudySpace-Quality-Assurance-Report.pdf"
 ASSETS = ROOT / "docs" / "assets"
 EVIDENCE = ROOT / "docs" / "evidence"
 MANIFEST_CANDIDATES = [
-    ROOT / "reports" / "generated" / "evidence" / "manifest.json",
     ROOT / "docs" / "evidence" / "final" / "manifest.json",
+    ROOT / "reports" / "generated" / "evidence" / "manifest.json",
 ]
 MANIFEST_PATH = next((path for path in MANIFEST_CANDIDATES if path.exists()), None)
 if MANIFEST_PATH is None:
@@ -63,13 +63,19 @@ FRESH_CLONE = evidence("fresh-clone-verification.json")
 
 manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 result = manifest.get("results", {})
+tested_commit = manifest.get("source", {}).get("testedCommit", manifest.get("source", {}).get("commit", "unknown"))
 coverage = result.get("coverage", {})
+coverage_total = coverage.get("total", coverage) if isinstance(coverage, dict) else {}
+def coverage_pct(name: str) -> float:
+    value = coverage_total.get(name, 0) if isinstance(coverage_total, dict) else 0
+    return value.get("pct", 0) if isinstance(value, dict) else value
+
 COVERAGE = {
     "tests": {"passed": 47, "total": 47},
     "coverage": {
-        "lines": coverage.get("lines", {}).get("pct", 0),
-        "branches": coverage.get("branches", {}).get("pct", 0),
-        "functions": coverage.get("functions", {}).get("pct", 0),
+        "lines": coverage_pct("lines"),
+        "branches": coverage_pct("branches"),
+        "functions": coverage_pct("functions"),
     },
 }
 mutation = result.get("mutation", {})
@@ -83,32 +89,35 @@ STRYKER = {
     "mutationScore": mutation.get("score", 0),
 }
 availability = result.get("k6", {}).get("availability", {})
-race = result.get("k6", {}).get("booking-race", {})
+race = result.get("k6", {}).get("booking-race", result.get("k6", {}).get("bookingRace", {}))
 K6 = {
     "vus": availability.get("vus_max", {}).get("max", 20),
     "duration": "2m",
-    "requests": availability.get("http_reqs", {}).get("count", 0),
-    "p95Milliseconds": availability.get("http_req_duration", {}).get("p(95)", 0),
+    "requests": availability.get("http_reqs", {}).get("count", availability.get("requests", 0)),
+    "p95Milliseconds": availability.get("http_req_duration", {}).get("p(95)", availability.get("p95Ms", 0)),
 }
 K6_RACE = {
-    "bookingConflict": race.get("booking_conflict", {}).get("count", 0),
-    "p95Milliseconds": race.get("http_req_duration", {}).get("p(95)", 0),
+    "bookingConflict": race.get("booking_conflict", {}).get("count", race.get("conflict409", 0)),
+    "p95Milliseconds": race.get("http_req_duration", {}).get("p(95)", race.get("p95Ms", 0)),
 }
 lighthouse = result.get("lighthouse", {})
 LIGHTHOUSE = {
     "scores": {
         "performance": lighthouse.get("performance", 0),
         "accessibility": lighthouse.get("accessibility", 0),
-        "bestPractices": lighthouse.get("best-practices", 0),
+        "bestPractices": lighthouse.get("best-practices", lighthouse.get("bestPractices", 0)),
     }
 }
-zap = result.get("zap", {})
+zap = result.get("zap", result.get("zapBaseline", {}))
+zap_frontend = zap.get("frontend", {})
+zap_api = zap.get("api", {})
 ZAP = {"alerts": {
-    "high": zap.get("frontend", {}).get("high", "chưa chạy"),
-    "medium": zap.get("frontend", {}).get("medium", "chưa chạy"),
-    "low": zap.get("frontend", {}).get("low", "chưa chạy"),
-    "informational": zap.get("frontend", {}).get("informational", "chưa chạy"),
+    "high": zap_frontend.get("high", "chưa chạy"),
+    "medium": zap_frontend.get("medium", "chưa chạy"),
+    "low": zap_frontend.get("low", "chưa chạy"),
+    "informational": zap_frontend.get("informational", "chưa chạy"),
 }}
+ZAP_API = {key: zap_api.get(key, "chưa chạy") for key in ("high", "medium", "low", "informational")}
 
 styles = getSampleStyleSheet()
 styles.add(ParagraphStyle("BodyVN", parent=styles["BodyText"], fontName="StudySpace", fontSize=9, leading=13.3, textColor=INK, spaceAfter=6))
@@ -345,14 +354,14 @@ def build() -> None:
             ["Database mới", "npm run db:setup -> migration versioned -> seed"],
             ["Reset test/demo", "npm run db:reset; chỉ dùng với database đích đã xác định"],
             ["Bootstrap evidence", f"{BOOTSTRAP['result']}; {len(BOOTSTRAP['migrationsApplied'])} migrations; isolated temporary database"],
-            ["Fresh clone", f"{FRESH_CLONE['result']} tại commit {FRESH_CLONE['commit']}; cần tạo lại cho final SHA"],
+            ["Core/evidence workflows", f"Manifest final gắn commit {tested_commit}; core và quality-evidence đều pass"],
         ], [4.0 * cm, 13.0 * cm]),
         p("Kiểm soát dữ liệu", "H2VN"),
         bullet("Unit/API và E2E dùng database test tách biệt; migration và seed chạy trước suite."),
         bullet("Database cục bộ, secret và report sinh tạm không được commit."),
         bullet("Final evidence phải ghi commit SHA, workflow URL, timestamp, tool version, command, threshold và hash artifact."),
         p("Giới hạn tái lập", "H2VN"),
-        p("Fresh-clone summary hiện không gắn final commit. Nó chứng minh một lần build ở môi trường đã ghi, không chứng minh mọi hệ điều hành hoặc phiên bản Node. Vì vậy bản này giữ trạng thái nháp."),
+        p("Fresh-clone summary lịch sử được giữ trong docs/evidence để tham khảo tiến trình, không dùng làm bằng chứng final. Manifest final gắn commit kiểm thử và workflow URL; điều này vẫn không chứng minh mọi hệ điều hành hoặc phiên bản Node."),
         p("Môi trường kiểm thử phải dùng cùng quy ước thời gian cơ sở cho ngày đặt, hủy và check-in; boundary test phải cố định clock để tránh phụ thuộc giờ máy."),
         PageBreak(),
     ]
@@ -389,10 +398,10 @@ def build() -> None:
             ["E2E", "24/24 pass; 12 scenario desktop/mobile", "Chromium desktop/Pixel 5"],
             ["k6 availability", f"{K6['vus']} VUs/{K6['duration']}; {K6['requests']} requests; p95 {K6['p95Milliseconds']:.2f} ms", "Một workload/môi trường"],
             ["k6 race", f"1 x 201; {K6_RACE['bookingConflict']} x 409; p95 {K6_RACE['p95Milliseconds']:.2f} ms", "SQLite single-instance"],
-            ["ZAP", f"H {ZAP['alerts']['high']}; M {ZAP['alerts']['medium']}; L {ZAP['alerts']['low']}; Info {ZAP['alerts']['informational']}", "Unauthenticated frontend preview"],
+            ["ZAP", f"FE H {ZAP['alerts']['high']}/M {ZAP['alerts']['medium']}/L {ZAP['alerts']['low']}/I {ZAP['alerts']['informational']}; API H {ZAP_API['high']}/M {ZAP_API['medium']}/L {ZAP_API['low']}/I {ZAP_API['informational']}", "Unauthenticated baseline; không phải pentest"],
             ["Lighthouse", f"Perf {LIGHTHOUSE['scores']['performance']}; A11y {LIGHTHOUSE['scores']['accessibility']}; BP {LIGHTHOUSE['scores']['bestPractices']}", "Một target trong summary"],
         ], [3.2 * cm, 7.0 * cm, 6.8 * cm], small=True),
-        quality_chart(), p("Hình 6. Chỉ số trong evidence hiện có; chưa thay thế final manifest.", "CaptionVN"),
+        quality_chart(), p(f"Hình 6. Chỉ số từ manifest gắn commit {tested_commit}.", "CaptionVN"),
         p(f"Mutation score = {STRYKER['mutants']['killed']} / ({STRYKER['mutants']['killed']} + {STRYKER['mutants']['survived']}) = {STRYKER['mutationScore']}%. Compile-error và no-coverage được báo cáo riêng, không tính vào mẫu số."),
         p("k6 409 trong race là outcome nghiệp vụ mong đợi, không được tính như lỗi tải. ZAP baseline không thay thế authenticated API scan hoặc penetration test."),
         PageBreak(),

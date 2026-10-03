@@ -8,7 +8,7 @@
 
 StudySpace là **Software Under Test (SUT)**: hệ thống quản lý phòng học và đặt chỗ. Mục tiêu bài tập không phải xây một công cụ kiểm thử độc lập, mà là xác định yêu cầu chất lượng, thiết kế và thực thi kiểm thử nhiều tầng, quản lý defect, rồi đánh giá chất lượng SUT bằng bằng chứng tái lập được. Bộ Vitest, Supertest, fast-check, Playwright, StrykerJS, k6, OWASP ZAP và Lighthouse là phương tiện kiểm định đi kèm SUT.
 
-Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw result -> Defect/Fix -> Retest`. Một kết luận không có evidence được ghi là **chưa đánh giá**. Bản hiện tại vẫn là bản nháp vì thông tin bìa chưa được cung cấp và các issue chất lượng cuối chưa có artifact gắn với final commit.
+Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw result -> Defect/Fix -> Retest`. Một kết luận không có evidence được ghi là **chưa đánh giá**. Bản hiện tại vẫn là bản nháp vì thông tin bìa chưa được cung cấp; evidence snapshot đã gắn với commit kiểm thử `512c073` và hai workflow cuối.
 
 ## 1. Phân công và kế hoạch
 
@@ -47,7 +47,7 @@ Sơ đồ use case, ERD và component được duy trì ở `docs/00-diagrams.md
 - Bootstrap database mới: `npm run db:setup`, chỉ dùng migration versioned rồi seed.
 - Reset demo/test database: `npm run db:reset`; đây là thao tác phá hủy dữ liệu và phải dùng trên database được chọn rõ.
 - Unit/API dùng isolated SQLite database; E2E seed dữ liệu riêng trước khi chạy.
-- `docs/evidence/bootstrap-summary.json` ghi nhận migration trên database tạm. Fresh-clone evidence hiện gắn commit `8a516df`, vì vậy phải được tạo lại cho final commit trước khi nộp.
+- `docs/evidence/bootstrap-summary.json` ghi nhận migration trên database tạm. Fresh-clone summary cũ không được dùng làm bằng chứng final; manifest final trỏ tới core/evidence workflow gắn `512c073`.
 
 ## 5. Test Plan và kỹ thuật thiết kế
 
@@ -71,23 +71,23 @@ Entry criteria: migration/seed thành công, build được, test data và brows
 | Hoạt động | Kết quả trong summary hiện có | Giới hạn |
 |---|---|---|
 | Unit + PBT + API | 47/47 pass | Chạy local sau đợt sửa correctness/a11y |
-| V8 coverage | Line 98,27%; branch 93,92%; function 100% | Chỉ source được instrument trong cấu hình |
-| Mutation | 88 killed; 16 survived; 2 no-coverage; 26 compile-error; 84,62% | Chỉ `booking-policy.ts`; dùng `killed / (killed + survived)`, compile-error và no-coverage báo cáo riêng |
+| V8 coverage | Line 98,29%; branch 93,95%; function 100% | Chỉ source được instrument trong cấu hình |
+| Mutation | 86 killed; 20 survived; 2 no-coverage; 27 compile-error; 81,13% | Chỉ `booking-policy.ts`; dùng `killed / (killed + survived)`, compile-error và no-coverage báo cáo riêng |
 | E2E Chromium | 24/24 pass; 12 scenario trên desktop/mobile | Không đại diện Firefox/WebKit |
-| k6 availability | 20 VUs/2 phút; 2.390 request; checks 100%; error 0%; p95 15,98 ms | Một máy/môi trường và một workload |
-| k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 370,25 ms | SQLite single-instance; summary đã sanitize JWT |
-| ZAP baseline | Chưa chạy trên môi trường local hiện tại | Workflow release sẽ chạy frontend và public API; không phải pentest authenticated |
-| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
+| k6 availability | 20 VUs/2 phút; 2.400 request; checks 100%; error 0%; p95 5,55 ms | Một máy/môi trường và một workload |
+| k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 65,15 ms | SQLite single-instance; summary đã sanitize JWT |
+| ZAP baseline | Frontend 0H/0M/9L/8I; API 0H/3M/3L/2I | Unauthenticated baseline; không phải pentest authenticated |
+| Lighthouse production preview | Performance 99; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
 
-Các số liệu local trên được ghi nhận trong raw artifact hiện tại nhưng chưa phải kết quả nộp cuối vì manifest vẫn mang mã `local-uncommitted` và ZAP chưa chạy. Chỉ chuyển sang kết luận final sau khi quality-evidence workflow gắn final SHA, upload raw reports đã sanitize và có ZAP artifact. Mutation score hiện tại là `88 / (88 + 16) = 84,62%`; no-coverage và 26 compile-error được báo cáo riêng.
+Các số liệu final trong bảng được lấy từ `docs/evidence/final/manifest.json`, với core run `37127607764` và quality-evidence run `37127614831`, đều gắn commit kiểm thử `512c073`. Mutation score là `86 / (86 + 20) = 81,13%`; no-coverage và 27 compile-error được báo cáo riêng. Raw artifact đầy đủ nằm trong artifact của GitHub Actions, không được chép vào repository.
 
 ## 7. Truy vết và quản lý defect
 
-RTM ánh xạ 15 requirement sang kỹ thuật, test case, source và evidence. Test ID phải xuất hiện trong catalog lẫn tên test và được kiểm tra tự động; cho đến khi trace gate của issue #15 pass, nhận định “truy vết khép kín” vẫn là mục tiêu chứ chưa phải kết luận cuối.
+RTM ánh xạ 15 requirement sang kỹ thuật, test case, source và evidence. `npm run qa:trace` trên core workflow xác nhận 15 requirement, 61 test case và 7 defect; test ID phải xuất hiện trong catalog lẫn tên test và được kiểm tra tự động.
 
 Các defect đã ghi nhận gồm: thiếu bước xác nhận booking, CI database provisioning, thiếu database invariant cho active booking, SQLite contention, closure not-found contract, login brute-force protection và thiếu positive check-in coverage. Mỗi defect trong `docs/08-bug-reports.md` có bước tái hiện, expected/actual, severity, fix commit và retest. Issue #3/#5/#6/#8/#12 là task chất lượng/hardening và được phân loại riêng thay vì gắn nhãn defect SUT không chính xác.
 
-Issue #13 (date/time) và #14 (audit/report semantics) đã có fix và retest. Issue #15 cùng các issue workflow/evidence #16–#20 vẫn cần artifact final gắn SHA trước khi báo cáo có thể chuyển khỏi trạng thái bản nháp.
+Issue #13 (date/time) và #14 (audit/report semantics) đã có fix và retest. Các issue workflow/evidence #16–#20 đã có retest trong hai workflow cuối; issue #15 chỉ được đóng sau khi manifest snapshot, RTM và report được đối chiếu lần cuối.
 
 ## 8. Đánh giá ISO/IEC 25010:2023
 
@@ -97,8 +97,8 @@ Báo cáo sử dụng chín đặc tính của phiên bản 2023: Functional sui
 - Performance efficiency có hai kịch bản k6, không suy diễn cho mọi workload.
 - Compatibility mới được kiểm tra trên hai viewport Chromium.
 - Interaction capability có Lighthouse/axe và luồng E2E, chưa có usability study với người dùng.
-- Reliability có conflict/race evidence; atomicity toàn bộ mutation cần retest cuối.
-- Security có JWT/RBAC/validation/rate-limit và baseline scan giới hạn, không tương đương pentest.
+- Reliability có conflict/race evidence và rollback test; phạm vi kết luận atomicity là các mutation đã có test.
+- Security có JWT/RBAC/validation/rate-limit và baseline scan giới hạn (API còn 3 Medium), không tương đương pentest.
 - Maintainability có TypeScript, migration, coverage/mutation; mutation chỉ ở domain policy.
 - Flexibility có cấu hình/migration/bootstrap trên môi trường đã ghi, chưa chứng minh đa DBMS.
 - Safety chưa đánh giá và nằm ngoài phạm vi vì không có hazard analysis.
@@ -107,7 +107,7 @@ Báo cáo sử dụng chín đặc tính của phiên bản 2023: Functional sui
 
 ## 9. Giới hạn và kết luận
 
-StudySpace có phạm vi SUT phù hợp với học phần và có nền tảng kiểm thử đa tầng. Tuy nhiên bản báo cáo chỉ được chuyển từ **BẢN NHÁP** sang bản nộp khi: ba issue cuối đã đóng bằng retest; workflow core và quality-evidence xanh; manifest ghi final SHA/run/tool version/hash artifact; PDF đã kiểm tra trực quan; và placeholder bìa được thay bằng dữ liệu thật.
+StudySpace có phạm vi SUT phù hợp với học phần và có nền tảng kiểm thử đa tầng. Bản báo cáo vẫn giữ nhãn **BẢN NHÁP** cho tới khi placeholder bìa được thay bằng dữ liệu thật và issue #15 được đóng với bằng chứng retest. Core và quality-evidence workflow hiện đã xanh; manifest ghi SHA, run, phiên bản công cụ và hash artifact.
 
 Kết luận hiện tại: **có bằng chứng tích cực cho các phạm vi đã chạy, nhưng chưa đủ điều kiện tuyên bố hoàn thiện 100% hoặc đạt toàn diện**.
 

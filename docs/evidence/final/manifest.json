@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "status": "evidence-snapshot",
+  "source": {
+    "testedCommit": "512c073189552e58c89bb398e6675f6eaecd58e8",
+    "coreWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37127607764",
+    "evidenceWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37127614831",
+    "repository": "https://github.com/bachiep/studyspace-quality-assurance"
+  },
+  "environment": {
+    "node": "v22.23.3",
+    "platform": "linux-x64",
+    "npm": "10.9.9",
+    "k6": "v2.3.0",
+    "lighthouse": "13.5.0",
+    "zapImage": "ghcr.io/zaproxy/zaproxy@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef"
+  },
+  "results": {
+    "traceability": { "requirements": 15, "testCases": 61, "defects": 7, "passed": true },
+    "automatedTests": { "passed": 47, "total": 47 },
+    "coverage": { "lines": 98.29, "branches": 93.95, "functions": 100, "statements": 98.29 },
+    "mutation": {
+      "killed": 86,
+      "survived": 20,
+      "noCoverage": 2,
+      "compileError": 27,
+      "score": 81.13,
+      "formula": "killed / (killed + survived)",
+      "scope": "backend/src/domain/booking-policy.ts"
+    },
+    "playwright": { "passed": 24, "expected": 24, "skipped": 0, "unexpected": 0, "flaky": 0 },
+    "k6": {
+      "availability": {
+        "requests": 2400,
+        "p95Ms": 5.55,
+        "checksRate": 1,
+        "requestFailureRate": 0,
+        "passed": true
+      },
+      "bookingRace": {
+        "requests": 22,
+        "created201": 1,
+        "conflict409": 19,
+        "checksRate": 1,
+        "expectedOutcomeRate": 1,
+        "p95Ms": 65.15,
+        "passed": true
+      }
+    },
+    "lighthouse": { "performance": 99, "accessibility": 100, "bestPractices": 96 },
+    "zapBaseline": {
+      "scope": "unauthenticated frontend preview and public API baseline",
+      "frontend": { "high": 0, "medium": 0, "low": 9, "informational": 8 },
+      "api": { "high": 0, "medium": 3, "low": 3, "informational": 2 },
+      "passedHighAlertGate": true
+    }
+  },
+  "artifacts": [
+    { "workflow": "core", "path": "backend/coverage/coverage-summary.json", "sha256": "de07809e0a79a5d36cf4aa44487ca7a9d58c7eaf53331670b3ffcc43613211a3" },
+    { "workflow": "core", "path": "reports/generated/stryker/mutation.json", "sha256": "1dcc1a0d252ddc600ded9f2f2e93827a76dccc1773c054b43bb28b615a59100e" },
+    { "workflow": "core", "path": "reports/generated/playwright-results.json", "sha256": "828827f867f3e4459a2974cb699da3c94e50f0aec785814de8529cf13cbeb6d7" },
+    { "workflow": "evidence", "path": "reports/generated/k6/availability-summary.json", "sha256": "d8eac55ae0f10cf1abc74c6f68c5faee4e98e6754ebc1a2114b49caa4b51d4f2" },
+    { "workflow": "evidence", "path": "reports/generated/k6/booking-race-summary.json", "sha256": "221fbc9542893403a3fd47b7d164848cdd769dbb530f57e639bd352bd76a1a26" },
+    { "workflow": "evidence", "path": "reports/generated/lighthouse/report.json", "sha256": "bd5999e33c44c3c4aacb4d4002da5a65681d05ec9e7116ef5fd41faf8a2cb1c9" },
+    { "workflow": "evidence", "path": "reports/generated/zap/frontend.json", "sha256": "41b216b3b9c3cae4babff1838c49160f0850bde1494dc2aacc711788d69f1e91" },
+    { "workflow": "evidence", "path": "reports/generated/zap/api.json", "sha256": "1819112ea678d280f01781be8ec0054a93283e4bc2dd76231fa5238182b124c0" }
+  ],
+  "thresholds": {
+    "coverage": { "lines": 85, "branches": 70, "functions": 85 },
+    "mutationScore": 60,
+    "lighthouse": { "performance": 80, "accessibility": 90, "bestPractices": 90 },
+    "k6": { "availabilityP95Ms": 500, "requestFailureRateMax": 0.01, "checksRate": 1 },
+    "zapHighAlerts": 0
+  },
+  "limitations": [
+    "ZAP is an unauthenticated baseline, not a penetration test or authenticated API assessment.",
+    "k6 measurements represent the documented local single-instance workload only.",
+    "The report remains a draft until cover identity placeholders are replaced with real submission data."
+  ]
+}
