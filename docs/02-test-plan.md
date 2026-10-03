@@ -9,6 +9,7 @@ Xác minh StudySpace đáp ứng SRS, đặc biệt tại các điểm rủi ro:
 | Tầng | Kỹ thuật/công cụ | Exit criteria |
 |---|---|---|
 | Unit | Vitest, V8 coverage, Stryker | Domain policy ≥85% line, ≥70% branch; mutation ≥60% |
+| Property-based | fast-check trên domain policy thuần | Kiểm tra bất biến slot, khoảng ngày và cửa sổ check-in với dữ liệu sinh tự động |
 | API | Supertest + SQLite test database | Mỗi endpoint có một ca dương và âm |
 | E2E | Playwright | 7 luồng student/admin ổn định trên Chromium |
 | Security | ZAP baseline + [checklist](11-security-checklist.md) + API auth abuse control | Không còn finding High; vượt ngưỡng login trả `429` |
@@ -31,11 +32,21 @@ Xác minh StudySpace đáp ứng SRS, đặc biệt tại các điểm rủi ro:
 
 New → Triaged → In Progress → Ready for retest → Verified → Closed. Mọi bug có expected/actual result, môi trường, severity, ảnh/log và ID test case.
 
+## Truy vết requirement, kỹ thuật và evidence
+
+| Nhóm requirement | Kỹ thuật chính | Test representative | Evidence |
+|---|---|---|---|
+| REQ-AUTH-* | API black-box, EP, BVA, security negative, E2E | TC-API-09, TC-API-20, TC-API-22, TC-API-35, TC-E2E-03 | `backend/tests/api.spec.ts`, Playwright report |
+| REQ-ROOM-* | API black-box, EP, BVA, E2E | TC-API-06, TC-API-11, TC-API-23, TC-E2E-10 | API test và Playwright report |
+| REQ-BOOK-01/04 | BVA, state transition, property-based, API black-box, E2E | TC-UNIT-01..05, TC-PBT-01..03, TC-API-07, TC-API-36, TC-E2E-01 | Domain/API test, coverage và Playwright report |
+| REQ-BOOK-02 | Concurrency test, database integrity, performance | TC-API-04, TC-API-29, TC-API-31, TC-NF-02 | API test, k6 race summary |
+| REQ-REPORT-* | Decision table, BVA, API black-box, E2E | TC-API-08, TC-API-19, TC-API-32, TC-E2E-02 | API test và dashboard E2E |
+
 ## Baseline đã xác minh
 
-- Vitest: 40/40 pass (5 unit, 35 API/configuration).
-- Tổng coverage backend: 97.23% line, 91.09% branch, 94.11% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%; số liệu và lệnh chạy lưu tại `docs/evidence/coverage-summary.json`.
-- StrykerJS: 68 mutants, 52 killed, 11 survived, 5 compile-error; mutation score 82.54%, đạt ngưỡng 60%.
+- Vitest: 43/43 pass (5 unit, 3 property-based, 35 API/configuration).
+- Tổng coverage backend: 97.23% line, 91.21% branch, 94.11% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%; số liệu và lệnh chạy lưu tại `docs/evidence/coverage-summary.json`.
+- StrykerJS: 68 mutants, 57 killed, 6 survived, 5 compile-error; mutation score 90.48%, đạt ngưỡng 60%.
 - Playwright Chromium: 20/20 pass trên Desktop Chrome và Pixel 5, gồm luồng student, admin report, RBAC/error UI, đăng ký, chuyển góc nhìn, lịch sử hủy, quản lý thiết bị, cập nhật hồ sơ, lọc phòng theo sức chứa/thiết bị và axe không có vi phạm serious/critical ở trang đăng nhập.
 - Lighthouse production (full categories): Performance 100, Accessibility 100, Best Practices 96, SEO 82; scope và số liệu lưu tại `docs/evidence/lighthouse-production-summary.json`.
 - k6 availability: 20 VUs/2 phút, 2.382 requests, error rate 0%, p95 17.47 ms; CLI exit code 0 and both thresholds passed.

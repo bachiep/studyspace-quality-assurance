@@ -1,0 +1,10 @@
+{
+  "verifiedAt": "2026-10-03",
+  "database": "temporary SQLite file",
+  "setupCommand": "npm run db:setup",
+  "resetCommand": "npm run db:reset",
+  "migrationsApplied": ["20261001044138_init", "20261002090000_active_booking_keys"],
+  "seededRooms": 3,
+  "result": "passed",
+  "notes": "Verification used an isolated temporary database; no user database was reset."
+}
