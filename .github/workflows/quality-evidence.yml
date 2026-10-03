@@ -63,7 +63,7 @@ jobs:
           mkdir -p reports/generated/zap
           run_zap() {
             local name="$1" target="$2" code=0
-            docker run --rm --network host -v "$PWD/reports/generated/zap:/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t "$target" -I -J "$name.json" -r "$name.html" || code=$?
+            docker run --rm --user 0:0 --network host -v "$PWD/reports/generated/zap:/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t "$target" -I -J "$name.json" -r "$name.html" || code=$?
             if [ "$code" -gt 1 ]; then exit "$code"; fi
           }
           run_zap frontend http://127.0.0.1:5173
