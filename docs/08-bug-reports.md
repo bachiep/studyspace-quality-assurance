@@ -49,7 +49,7 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 | Bước tái hiện | Chạy workflow CI/E2E trên runner chưa có `DATABASE_URL` và chưa áp schema SQLite. |
 | Actual result | Prisma không có database sẵn sàng, làm bước seed/E2E không thể xác nhận các luồng Playwright. |
 | Expected result | Workflow dùng SQLite riêng cho CI và áp schema trước khi seed/E2E. |
-| Cách sửa | Khai báo `DATABASE_URL=file:./ci.db` trong workflow và thêm bước `npm run prisma:push --workspace backend` trước test/E2E. |
+| Cách sửa ban đầu | Khai báo SQLite riêng trong workflow và khởi tạo schema trước test/E2E. Cách dùng `prisma db push` trong fix ban đầu sau đó đã được thay thế bởi migration versioned ở issue #12. |
 | Fix commit | [`fd37daa`](https://github.com/bachiep/studyspace-quality-assurance/commit/fd37daa9508bb4588cceddf4d9d035941a4f3371) |
 | Retest | Commit sửa ghi nhận chạy cục bộ 9 Playwright E2E pass; CI hiện chạy schema trước test, mutation, build và E2E. Test Summary Report ghi nhận E2E Chromium 9/9 pass. |
 | Trạng thái | Closed / Retested |
@@ -130,3 +130,27 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 - `BUG-005` liên kết với REQ-ROOM-05 và `TC-API-34` trong RTM.
 - `BUG-006` liên kết với REQ-AUTH-02 và `TC-API-35` trong RTM.
 - `BUG-007` liên kết với REQ-BOOK-04 và `TC-API-36` trong RTM.
+
+## Bổ sung cho BUG-002 — bootstrap bằng migration versioned
+
+Issue [#12](https://github.com/bachiep/studyspace-quality-assurance/issues/12) phát hiện hướng dẫn `prisma db push` có thể dừng vì cảnh báo data-loss khi schema cũ chưa có active booking keys. Quy trình hiện tại dùng `npm run db:setup` để chạy `prisma migrate deploy` rồi seed; `npm run db:reset` là lệnh reset tường minh. `docs/evidence/bootstrap-summary.json` xác nhận hai migration được áp trên database SQLite tạm, không xóa database người dùng.
+
+## Issue cải tiến/chất lượng không phân loại là defect SUT
+
+| Issue | Loại | Kết quả/phạm vi |
+|---|---|---|
+| [#3](https://github.com/bachiep/studyspace-quality-assurance/issues/3) | Hồ sơ chất lượng | Chuẩn hóa SRS, RTM, catalog và kết quả thực thi. |
+| [#5](https://github.com/bachiep/studyspace-quality-assurance/issues/5) | Đồng bộ hồ sơ/kỹ thuật | Đồng bộ active-key, migration evidence và tài liệu. |
+| [#6](https://github.com/bachiep/studyspace-quality-assurance/issues/6) | Compatibility evidence | Chạy cùng E2E trên Desktop Chrome và Pixel 5, tránh xung đột shared data. |
+| [#8](https://github.com/bachiep/studyspace-quality-assurance/issues/8) | Reliability hardening | Đưa mọi booking-state write qua cùng serialization boundary. |
+| [#12](https://github.com/bachiep/studyspace-quality-assurance/issues/12) | Reproducibility | Thay bootstrap `db push` bằng migration versioned. |
+
+## Các issue đang mở tại thời điểm lập báo cáo
+
+| Issue | Rủi ro | Điều kiện đóng |
+|---|---|---|
+| [#13](https://github.com/bachiep/studyspace-quality-assurance/issues/13) | Domain có thể chấp nhận ngày lịch không tồn tại hoặc phụ thuộc timezone host. | Strict calendar validation, quy ước campus time và BVA/PBT pass. |
+| [#14](https://github.com/bachiep/studyspace-quality-assurance/issues/14) | Mutation và audit chưa nguyên tử; tên occupancy rate chưa chính xác. | Transaction rollback test và tách reservation/utilization rate. |
+| [#15](https://github.com/bachiep/studyspace-quality-assurance/issues/15) | Traceability và evidence cuối chưa kiểm tra máy/gắn final commit. | Trace gate, evidence workflow và final manifest pass. |
+
+Do ba issue trên chưa đóng tại thời điểm cập nhật tài liệu, báo cáo phải giữ trạng thái **BẢN NHÁP** và không được tuyên bố dự án hoàn tất.

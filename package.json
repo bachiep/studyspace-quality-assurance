@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "npm run dev --workspace backend",
     "test": "npm run test --workspace backend",
+    "qa:trace": "node scripts/validate-traceability.mjs",
+    "qa:evidence-manifest": "node scripts/generate-evidence-manifest.mjs",
     "test:mutation": "cross-env DATABASE_URL=file:./test.db npm run prisma:migrate:reset --workspace backend && cross-env DATABASE_URL=file:./test.db stryker run",
     "build": "npm run build --workspace backend && npm run build --workspace frontend",
     "db:setup": "npm run db:prepare-file --workspace backend && npm run prisma:migrate:deploy --workspace backend && npm run prisma:seed --workspace backend",

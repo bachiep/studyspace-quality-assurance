@@ -11,7 +11,7 @@ Xác minh StudySpace đáp ứng SRS, đặc biệt tại các điểm rủi ro:
 | Unit | Vitest, V8 coverage, Stryker | Domain policy ≥85% line, ≥70% branch; mutation ≥60% |
 | Property-based | fast-check trên domain policy thuần | Kiểm tra bất biến slot, khoảng ngày và cửa sổ check-in với dữ liệu sinh tự động |
 | API | Supertest + SQLite test database | Mỗi endpoint có một ca dương và âm |
-| E2E | Playwright | 7 luồng student/admin ổn định trên Chromium |
+| E2E | Playwright | 12 scenario student/admin ổn định trên Chromium desktop/mobile |
 | Security | ZAP baseline + [checklist](11-security-checklist.md) + API auth abuse control | Không còn finding High; vượt ngưỡng login trả `429` |
 | Performance | k6 | 20 VUs/2 phút, error rate <1%, lưu p95 |
 | Usability | Lighthouse + axe | A11y ≥90, Best Practices ≥90, Performance desktop ≥80 |
@@ -44,12 +44,12 @@ New → Triaged → In Progress → Ready for retest → Verified → Closed. M�
 
 ## Baseline đã xác minh
 
-- Vitest: 43/43 pass (5 unit, 3 property-based, 35 API/configuration).
-- Tổng coverage backend: 97.23% line, 91.21% branch, 94.11% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%; số liệu và lệnh chạy lưu tại `docs/evidence/coverage-summary.json`.
-- StrykerJS: 68 mutants, 57 killed, 6 survived, 5 compile-error; mutation score 90.48%, đạt ngưỡng 60%.
-- Playwright Chromium: 20/20 pass trên Desktop Chrome và Pixel 5, gồm luồng student, admin report, RBAC/error UI, đăng ký, chuyển góc nhìn, lịch sử hủy, quản lý thiết bị, cập nhật hồ sơ, lọc phòng theo sức chứa/thiết bị và axe không có vi phạm serious/critical ở trang đăng nhập.
-- Lighthouse production (full categories): Performance 100, Accessibility 100, Best Practices 96, SEO 82; scope và số liệu lưu tại `docs/evidence/lighthouse-production-summary.json`.
-- k6 availability: 20 VUs/2 phút, 2.382 requests, error rate 0%, p95 17.47 ms; CLI exit code 0 and both thresholds passed.
-- k6 booking race: 20 VUs đồng thời, 1 response `201`, 19 response `409`, error rate 0%, p95 292.09 ms; exit code 0.
-- OWASP ZAP 2.17.0 production preview: 0 High, 0 Medium, 0 Low, 2 Informational.
+- Vitest: 47/47 pass (11 domain/property-based và 36 API/configuration).
+- Tổng coverage backend: 98.27% line, 93.92% branch, 100% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
+- StrykerJS: 132 mutants gồm 88 killed, 16 survived, 2 no-coverage, 26 compile-error; mutation score 83.02% trên mutant không compile-error, đạt ngưỡng 60%.
+- Playwright Chromium: 24/24 pass trên Desktop Chrome và Pixel 5, gồm 12 scenario student/admin; axe kiểm tra login, student portal và admin console.
+- Lighthouse production preview: Performance 100, Accessibility 100, Best Practices 96.
+- k6 availability: 20 VUs/2 phút, 2.390 requests, checks 100%, error rate 0%, p95 15.98 ms.
+- k6 booking race: 20 VUs đồng thời, 1 response `201`, 19 response `409`, checks 100%, error rate 0%, p95 370.25 ms; summary đã loại JWT setup data trước lưu artifact.
+- OWASP ZAP: chưa chạy trong môi trường local hiện tại; workflow release sẽ tạo artifact frontend và public API trước khi kết luận.
 - Backend TypeScript và frontend Vite production build pass.

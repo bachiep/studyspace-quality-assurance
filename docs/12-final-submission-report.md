@@ -1,91 +1,116 @@
-# BÁO CÁO BÀI TẬP LỚN
+# BẢN NHÁP - BÁO CÁO BÀI TẬP LỚN
 
-## Đánh giá và kiểm định chất lượng phần mềm — StudySpace
+## Đánh giá và kiểm định chất lượng phần mềm - StudySpace
 
-StudySpace là hệ thống quản lý phòng học và đặt chỗ, được xây dựng làm **Software Under Test (SUT)** cho học phần. Báo cáo này tổng hợp đặc tả, triển khai và kết quả kiểm định; bộ công cụ kiểm thử là phương tiện đánh giá SUT, không phải sản phẩm của đề tài.
+> **Thông tin phải hoàn thiện trước khi nộp:** `[TRƯỜNG]`, `[KHOA]`, `[GIẢNG VIÊN]`, `[NHÓM]`, `[HỌ TÊN - MSSV]`.
 
-## 1. Tóm tắt dự án và phạm vi
+## Tóm tắt
 
-Hệ thống có hai vai trò: `STUDENT` tìm phòng, đặt/hủy/check-in và quản lý hồ sơ; `ADMIN` quản lý người dùng, phòng, thiết bị, lịch đóng, booking và báo cáo. Phạm vi chủ đích không gồm thanh toán, OAuth, email/SMS, bản đồ, đa cơ sở hoặc chat thời gian thực.
+StudySpace là **Software Under Test (SUT)**: hệ thống quản lý phòng học và đặt chỗ. Mục tiêu bài tập không phải xây một công cụ kiểm thử độc lập, mà là xác định yêu cầu chất lượng, thiết kế và thực thi kiểm thử nhiều tầng, quản lý defect, rồi đánh giá chất lượng SUT bằng bằng chứng tái lập được. Bộ Vitest, Supertest, fast-check, Playwright, StrykerJS, k6, OWASP ZAP và Lighthouse là phương tiện kiểm định đi kèm SUT.
 
-| Phân hệ | Nội dung kiểm định trọng tâm |
-|---|---|
-| Xác thực và phân quyền | JWT, RBAC, validation, rate limiting login và security header |
-| Phòng học | Room ACTIVE/INACTIVE, thiết bị, sức chứa và lịch đóng |
-| Booking | Slot 60 phút, giới hạn 14 ngày, conflict, hủy, check-in và audit trail |
-| Vận hành | Quản lý user/booking và aggregate báo cáo sử dụng |
+Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw result -> Defect/Fix -> Retest`. Một kết luận không có evidence được ghi là **chưa đánh giá**. Bản hiện tại vẫn là bản nháp vì thông tin bìa chưa được cung cấp và các issue chất lượng cuối chưa có artifact gắn với final commit.
 
-## 2. Đặc tả và thiết kế
+## 1. Phân công và kế hoạch
 
-SRS xác định 15 requirement thuộc bốn nhóm `REQ-AUTH-*`, `REQ-ROOM-*`, `REQ-BOOK-*` và `REQ-REPORT-*`. Mọi requirement có use case, precondition, main flow, alternate/exception flow, test case và evidence trong RTM.
-
-Kiến trúc ba tầng gồm React/Vite/TypeScript/Tailwind ở presentation, Express/Zod/JWT/RBAC/domain policy ở application, và Prisma/SQLite ở data. Các thực thể nghiệp vụ là `User`, `Room`, `Equipment`, `RoomEquipment`, `RoomClosure`, `Booking` và `AuditLog`.
-
-Booking sử dụng hai active key duy nhất theo phòng-slot và user-slot. Transaction, xử lý unique conflict thành HTTP `409`, cùng hàng đợi write trong SQLite single-instance bảo vệ tính toàn vẹn khi request đồng thời. Room có lịch sử chỉ chuyển `INACTIVE`, không xóa lịch sử nghiệp vụ.
-
-Sơ đồ use case, ERD và component diagram nằm tại `docs/00-diagrams.md`; đặc tả đầy đủ nằm tại `docs/01-srs.md`.
-
-## 3. Kế hoạch kiểm thử
-
-Chiến lược tuân theo testing pyramid: kiểm tra nhanh ở domain/service, kiểm tra contract ở API/database và xác nhận hành vi người dùng qua trình duyệt. Các kỹ thuật được ghi trực tiếp trong Test Case Catalog.
-
-| Tầng | Công cụ | Kỹ thuật | Mục tiêu |
+| Thành viên | MSSV | Trách nhiệm | Bằng chứng đóng góp |
 |---|---|---|---|
-| Unit | Vitest, V8 | White-box, BVA, state transition | Quy tắc slot, ngày, hủy và check-in |
-| Property-based | fast-check | Invariant, BVA | 14 slot, khoảng ngày 14 ngày, cửa sổ check-in |
-| API/database | Supertest, Prisma, SQLite | API black-box, EP, decision table, concurrency | HTTP contract, RBAC, audit, transaction và conflict |
-| E2E | Playwright, axe | Scenario-based, accessibility | Student/admin flow trên Chromium |
-| Non-functional | k6, ZAP, Lighthouse | Load, security baseline, usability | p95/error rate, alert level, quality UI |
-| Mutation | StrykerJS | Mutation testing | Độ nhạy của test domain policy |
+| `[HỌ TÊN]` | `[MSSV]` | `[PHÂN CÔNG]` | `[COMMIT/ISSUE/PHẦN BÁO CÁO]` |
 
-Entry criteria gồm migration test database thành công, dữ liệu seed, build được và browser E2E sẵn sàng. Exit criteria: tất cả test pass; coverage line >=85%, branch >=70%; mutation >=60%; không có ZAP High; race booking có đúng một `201` và các request còn lại `409`.
+Kế hoạch thực hiện gồm: đặc tả SRS; thiết kế kiến trúc và dữ liệu; hiện thực bốn phân hệ; thiết kế test theo rủi ro; thực thi kiểm thử chức năng/phi chức năng; ghi nhận và sửa defect; kiểm thử hồi quy; tổng hợp evidence và đánh giá ISO/IEC 25010:2023.
 
-## 4. Thực hiện kiểm thử
+## 2. Phạm vi và yêu cầu SUT
 
-Test Case Catalog có 56 ca test truy vết được. Nhóm property-based bổ sung ba invariant thuần cho `booking-policy.ts`: thời lượng slot, khoảng ngày hợp lệ và cửa sổ check-in. API test bao phủ ca hợp lệ, validation, auth, RBAC, not-found, conflict và audit. E2E xác nhận luồng đặt/hủy, đăng ký, cập nhật hồ sơ, admin operation, filter room và accessibility login.
+Hệ thống có hai vai trò nghiệp vụ. `STUDENT` quản lý hồ sơ, tìm phòng theo ngày/sức chứa/thiết bị, đặt/hủy/check-in và xem lịch sử. `ADMIN` quản lý người dùng, phòng, thiết bị, lịch đóng, trạng thái booking và báo cáo. `Guest` xem trang giới thiệu và đăng ký/đăng nhập.
 
-![Student portal](assets/student-dashboard.png)
-
-*Hình 1. Student portal: tra cứu phòng theo ngày, sức chứa, thiết bị và slot.*
-
-![Admin console](assets/admin-dashboard.png)
-
-*Hình 2. Admin console: dashboard, phòng, thiết bị, closure và quản trị user.*
-
-## 5. Kết quả tổng hợp
-
-| Hoạt động | Kết quả đã xác minh | Evidence |
-|---|---:|---|
-| Unit + property-based + API | 43/43 pass | `docs/evidence/coverage-summary.json` |
-| V8 coverage | 97.23% line; 91.21% branch; 94.11% function | `docs/evidence/coverage-summary.json` |
-| Mutation | 57 killed; 6 survived; 5 compile-error; 90.48% | `docs/evidence/stryker-summary.json` |
-| E2E Chromium | 20/20 pass; axe login không có serious/critical | Playwright report |
-| k6 availability | 20 VUs/2 phút; error 0%; p95 17.47 ms | k6 summary |
-| k6 booking race | 1 response `201`, 19 response `409`; error 0%; p95 292.09 ms | k6 race summary |
-| ZAP baseline | 0 High, 0 Medium, 0 Low; 2 Informational | ZAP report |
-| Lighthouse | Performance 100; Accessibility 100; Best Practices 96 | Lighthouse summary |
-
-Mutation score được áp dụng cho `booking-policy.ts`, không suy diễn cho toàn bộ application. k6 race xác nhận business outcome mong đợi thay vì coi HTTP `409` là lỗi tải. ZAP baseline là scan giới hạn theo target production preview; các giới hạn được ghi rõ trong security checklist.
-
-## 6. Truy vết và defect management
-
-RTM hiện có 15/15 requirement được liên kết đến test case, source test và evidence. Bug reports ghi lỗi có thể tái hiện, expected/actual result, severity, fix commit và retest. Ví dụ, `BUG-007` liên kết `REQ-BOOK-04` với `TC-API-36`, xác minh check-in thành công có audit log.
-
-| Nhóm requirement | Kỹ thuật representative | Evidence chính |
+| Phân hệ | Mã yêu cầu | Nội dung trọng tâm |
 |---|---|---|
-| AUTH | API black-box, security negative, E2E | auth/RBAC/rate-limit API test |
-| ROOM | EP, BVA, API black-box, E2E | room/closure/equipment API test |
-| BOOK | BVA, state transition, property-based, concurrency | domain test, API conflict, k6 |
-| REPORT | BVA, decision table, API black-box | usage report API và admin E2E |
+| Xác thực/phân quyền | `REQ-AUTH-*` | Đăng ký, đăng nhập JWT, hồ sơ, ADMIN/STUDENT RBAC |
+| Phòng học | `REQ-ROOM-*` | Tìm phòng, ACTIVE/INACTIVE, thiết bị và lịch đóng |
+| Booking | `REQ-BOOK-*` | Slot 60 phút, 14 ngày, conflict, hủy, check-in, lịch sử |
+| Báo cáo | `REQ-REPORT-*` | Thống kê theo trạng thái, reservation/utilization và phòng phổ biến |
 
-## 7. Đánh giá chất lượng ISO/IEC 25010
+Quy tắc cốt lõi: 14 slot từ 07:00 đến 21:00; ngày đặt từ hôm nay đến ngày thứ 14 theo thời gian cơ sở; phòng phải ACTIVE, đủ sức chứa/thiết bị và không bị đóng; không trùng room-slot hoặc user-slot; hủy trước giờ bắt đầu ít nhất 60 phút; check-in trong cửa sổ -15 đến +15 phút. Room có lịch sử được chuyển INACTIVE thay vì xóa cứng. Phạm vi không gồm thanh toán, OAuth, email/SMS, bản đồ, đa cơ sở và chat thời gian thực.
 
-Functional suitability được hỗ trợ bằng coverage requirement 100% trong RTM và các luồng E2E. Reliability được tăng cường bởi transaction, active key, concurrency test và reset database isolation. Security gồm JWT/RBAC, validation, Helmet, configured CORS, login rate-limit và ZAP baseline. Maintainability có TypeScript strict, migration versioned, coverage và mutation score. Usability có responsive UI, axe và Lighthouse. Performance efficiency có số liệu k6 thật; compatibility và portability dựa trên REST/JSON, browser Chromium và workflow CI tái lập được.
+Đặc tả actor, precondition, postcondition, main/alternate/exception flow nằm trong `docs/01-srs.md`.
 
-## 8. Kết luận
+## 3. Thiết kế và kiến trúc
 
-StudySpace đáp ứng vai trò SUT hoàn chỉnh cho phương án “xây dựng ứng dụng và kiểm định tự động nhiều tầng”. Hồ sơ không chỉ liệt kê công cụ: mỗi kết luận chất lượng được liên kết đến requirement, test, evidence hoặc defect. Những giới hạn còn lại được ghi rõ thay vì suy diễn: không có integration thanh toán/OAuth và ZAP là baseline, không thay thế penetration test chuyên sâu.
+Kiến trúc ba tầng gồm React/Vite/TypeScript/Tailwind ở presentation; Express/Zod/JWT/RBAC và booking policy ở application/domain; Prisma/SQLite ở data. Các thực thể là `User`, `Room`, `Equipment`, `RoomEquipment`, `RoomClosure`, `Booking` và `AuditLog`.
+
+Booking lưu hai active key duy nhất theo room-slot và user-slot. Khi booking chuyển sang trạng thái cuối, khóa active được giải phóng nhưng bản ghi lịch sử được giữ. Trong phạm vi SQLite single-instance, booking-state write được tuần tự hóa; unique constraint và transaction vẫn là lớp bảo vệ dữ liệu. HTTP `409` là contract cho xung đột nghiệp vụ.
+
+Sơ đồ use case, ERD và component được duy trì ở `docs/00-diagrams.md` và được render trong PDF. Môi trường cục bộ đã kiểm thử dùng HTTP trên loopback; HTTPS chỉ là yêu cầu triển khai, chưa có evidence trong repository.
+
+## 4. Môi trường và khả năng tái lập
+
+- Runtime: Node.js, TypeScript; frontend React/Vite; backend Express/Prisma/SQLite.
+- Bootstrap database mới: `npm run db:setup`, chỉ dùng migration versioned rồi seed.
+- Reset demo/test database: `npm run db:reset`; đây là thao tác phá hủy dữ liệu và phải dùng trên database được chọn rõ.
+- Unit/API dùng isolated SQLite database; E2E seed dữ liệu riêng trước khi chạy.
+- `docs/evidence/bootstrap-summary.json` ghi nhận migration trên database tạm. Fresh-clone evidence hiện gắn commit `8a516df`, vì vậy phải được tạo lại cho final commit trước khi nộp.
+
+## 5. Test Plan và kỹ thuật thiết kế
+
+Ưu tiên rủi ro: race booking, bypass quyền ADMIN, sai ngày/múi giờ, sai thống kê và mất lịch sử khi xóa phòng. Testing pyramid đặt phần lớn kiểm tra ở unit/domain và API/database, còn E2E kiểm tra luồng quan trọng.
+
+| Tầng | Công cụ | Kỹ thuật | Mục tiêu/evidence |
+|---|---|---|---|
+| Unit/domain | Vitest, V8 | White-box, BVA, state transition | Slot, ngày, hủy, check-in, coverage |
+| Property-based | fast-check | Invariant/property | Thời lượng slot, phạm vi ngày, cửa sổ check-in |
+| API/database | Supertest, Prisma | EP, BVA, decision table, API black-box, concurrency | Contract, RBAC, validation, transaction, audit, conflict |
+| E2E | Playwright, axe | Scenario/state transition/accessibility | Luồng Student/Admin và responsive viewport |
+| Mutation | StrykerJS | Mutation testing | Độ nhạy test của `booking-policy.ts` |
+| Performance | k6 | Load/race và threshold | p95, throughput, error rate, 201/409 |
+| Security | OWASP WSTG, ZAP | Negative API và unauthenticated baseline | Auth, authorization, session, input, error, business logic |
+| UI quality | Lighthouse | Automated audit | Performance, accessibility, best practices |
+
+Entry criteria: migration/seed thành công, build được, test data và browser sẵn sàng. Exit criteria: suite bắt buộc pass; line >=85%, branch >=70%, mutation >=60%; mỗi API nghiệp vụ có ca dương và ca âm/biên phù hợp; race có đúng một `201`; ZAP không có High; k6 và Lighthouse đạt threshold đã khai báo.
+
+## 6. Thực thi và kết quả có bằng chứng
+
+| Hoạt động | Kết quả trong summary hiện có | Giới hạn |
+|---|---|---|
+| Unit + PBT + API | 47/47 pass | Chạy local sau đợt sửa correctness/a11y |
+| V8 coverage | Line 98,27%; branch 93,92%; function 100% | Chỉ source được instrument trong cấu hình |
+| Mutation | 88 killed; 16 survived; 2 no-coverage; 26 compile-error; 83,02% | Chỉ `booking-policy.ts`; compile-error loại khỏi mẫu số, no-coverage không loại |
+| E2E Chromium | 24/24 pass; 12 scenario trên desktop/mobile | Không đại diện Firefox/WebKit |
+| k6 availability | 20 VUs/2 phút; 2.390 request; checks 100%; error 0%; p95 15,98 ms | Một máy/môi trường và một workload |
+| k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 370,25 ms | SQLite single-instance; summary đã sanitize JWT |
+| ZAP baseline | Chưa chạy trên môi trường local hiện tại | Workflow release sẽ chạy frontend và public API; không phải pentest authenticated |
+| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
+
+Các số liệu local trên được ghi nhận trong raw artifact hiện tại nhưng chưa phải kết quả nộp cuối vì manifest vẫn mang mã `local-uncommitted` và ZAP chưa chạy. Chỉ chuyển sang kết luận final sau khi quality-evidence workflow gắn final SHA, upload raw reports đã sanitize và có ZAP artifact. Mutation score hiện tại là `88 / (88 + 16 + 2) = 83,02%`; 26 compile-error bị loại khỏi mẫu số.
+
+## 7. Truy vết và quản lý defect
+
+RTM ánh xạ 15 requirement sang kỹ thuật, test case, source và evidence. Test ID phải xuất hiện trong catalog lẫn tên test và được kiểm tra tự động; cho đến khi trace gate của issue #15 pass, nhận định “truy vết khép kín” vẫn là mục tiêu chứ chưa phải kết luận cuối.
+
+Các defect đã ghi nhận gồm: thiếu bước xác nhận booking, CI database provisioning, thiếu database invariant cho active booking, SQLite contention, closure not-found contract, login brute-force protection và thiếu positive check-in coverage. Mỗi defect trong `docs/08-bug-reports.md` có bước tái hiện, expected/actual, severity, fix commit và retest. Issue #3/#5/#6/#8/#12 là task chất lượng/hardening và được phân loại riêng thay vì gắn nhãn defect SUT không chính xác.
+
+Tại thời điểm tạo bản nháp, issue #13 (date/time), #14 (audit/report semantics) và #15 (traceability/final evidence) đang mở. Vì vậy báo cáo không tuyên bố hoàn tất.
+
+## 8. Đánh giá ISO/IEC 25010:2023
+
+Báo cáo sử dụng chín đặc tính của phiên bản 2023: Functional suitability, Performance efficiency, Compatibility, Interaction capability, Reliability, Security, Maintainability, Flexibility và Safety. Bảng metric/evidence/giới hạn đầy đủ nằm ở `docs/06-iso25010.md`.
+
+- Functional suitability có RTM/test nhưng chỉ trong SRS.
+- Performance efficiency có hai kịch bản k6, không suy diễn cho mọi workload.
+- Compatibility mới được kiểm tra trên hai viewport Chromium.
+- Interaction capability có Lighthouse/axe và luồng E2E, chưa có usability study với người dùng.
+- Reliability có conflict/race evidence; atomicity toàn bộ mutation cần retest cuối.
+- Security có JWT/RBAC/validation/rate-limit và baseline scan giới hạn, không tương đương pentest.
+- Maintainability có TypeScript, migration, coverage/mutation; mutation chỉ ở domain policy.
+- Flexibility có cấu hình/migration/bootstrap trên môi trường đã ghi, chưa chứng minh đa DBMS.
+- Safety chưa đánh giá và nằm ngoài phạm vi vì không có hazard analysis.
+
+Đây là đánh giá dựa trên mô hình chất lượng, không phải chứng nhận ISO.
+
+## 9. Giới hạn và kết luận
+
+StudySpace có phạm vi SUT phù hợp với học phần và có nền tảng kiểm thử đa tầng. Tuy nhiên bản báo cáo chỉ được chuyển từ **BẢN NHÁP** sang bản nộp khi: ba issue cuối đã đóng bằng retest; workflow core và quality-evidence xanh; manifest ghi final SHA/run/tool version/hash artifact; PDF đã kiểm tra trực quan; và placeholder bìa được thay bằng dữ liệu thật.
+
+Kết luận hiện tại: **có bằng chứng tích cực cho các phạm vi đã chạy, nhưng chưa đủ điều kiện tuyên bố hoàn thiện 100% hoặc đạt toàn diện**.
 
 ## Tài liệu tham khảo
 
-Danh mục đầy đủ tại `docs/10-references.md`: ISO/IEC 25010:2023; tài liệu chính thức Vitest, Playwright, StrykerJS, Grafana k6, OWASP ZAP và Lighthouse.
+Danh mục URL chính thức nằm tại `docs/10-references.md`, gồm ISO/IEC 25010:2023, ISO/IEC 25023, OWASP WSTG 4.2, Playwright, k6, ZAP, StrykerJS, Vitest và Lighthouse.

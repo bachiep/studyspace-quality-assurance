@@ -24,7 +24,7 @@ beforeEach(async () => {
 });
 
 describe.sequential("StudySpace API", () => {
-  it("requires a JWT secret when configured for production", () => {
+  it("[TC-API-33] requires a JWT secret when configured for production", () => {
     const previousEnvironment = process.env.NODE_ENV;
     const previousSecret = process.env.JWT_SECRET;
     try {
@@ -39,20 +39,20 @@ describe.sequential("StudySpace API", () => {
     }
   });
 
-  it("reports a healthy service through the public health contract", async () => {
+  it("[TC-API-21] reports a healthy service through the public health contract", async () => {
     const response = await request(app).get("/health");
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ status: "ok" });
   });
 
-  it("only grants CORS access to configured local frontend origins", async () => {
+  it("[TC-API-30] only grants CORS access to configured local frontend origins", async () => {
     const allowed = await request(app).get("/health").set("origin", "http://localhost:5173");
     const rejected = await request(app).get("/health").set("origin", "https://untrusted.example");
     expect(allowed.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
     expect(rejected.headers["access-control-allow-origin"]).toBeUndefined();
   });
 
-  it("rate limits repeated unsuccessful login attempts", async () => {
+  it("[TC-API-35] rate limits repeated unsuccessful login attempts", async () => {
     const previousLimit = process.env.AUTH_RATE_LIMIT_MAX;
     process.env.AUTH_RATE_LIMIT_MAX = "2";
     try {
@@ -70,49 +70,49 @@ describe.sequential("StudySpace API", () => {
     }
   });
 
-  it("requires authentication for booking", async () => {
+  it("[TC-API-01] requires authentication for booking", async () => {
     const response = await request(app).post("/bookings").send({ roomId, date: futureDate, startTime: "10:00" });
     expect(response.status).toBe(401);
   });
 
-  it("prevents non-admin users from creating rooms", async () => {
+  it("[TC-API-02] prevents non-admin users from creating rooms", async () => {
     const response = await request(app).post("/admin/rooms").set("authorization", `Bearer ${studentToken}`).send({ name: "B202", capacity: 10, location: "B2" });
     expect(response.status).toBe(403);
   });
 
-  it("creates one booking and records an audit entry", async () => {
+  it("[TC-API-03] creates one booking and records an audit entry", async () => {
     const response = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "10:00" });
     expect(response.status).toBe(201); expect(response.body.status).toBe("BOOKED");
     expect(await prisma.auditLog.count({ where: { action: "BOOKING_CREATED" } })).toBe(1);
   });
 
-  it("returns conflict when concurrent requests reserve the same room slot", async () => {
+  it("[TC-API-04] returns conflict when concurrent requests reserve the same room slot", async () => {
     const secondStudent = await prisma.user.create({ data: { name: "Student Two", email: "student2@test.local", passwordHash: await hashPassword("Password123!") } });
     const reserve = (token: string) => request(app).post("/bookings").set("authorization", `Bearer ${token}`).send({ roomId, date: futureDate, startTime: "11:00" });
     const results = await Promise.all([reserve(studentToken), reserve(createToken(secondStudent))]);
     expect(results.map((result) => result.status).sort()).toEqual([201, 409]);
   });
 
-  it("returns only success or conflicts when twenty requests race for one booking", async () => {
+  it("[TC-API-31] returns only success or conflicts when twenty requests race for one booking", async () => {
     const reserve = () => request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "19:00" });
     const results = await Promise.all(Array.from({ length: 20 }, reserve));
     expect(results.filter((result) => result.status === 201)).toHaveLength(1);
     expect(results.filter((result) => result.status === 409)).toHaveLength(19);
   });
 
-  it("hides inactive rooms from public availability", async () => {
+  it("[TC-API-05] hides inactive rooms from public availability", async () => {
     await request(app).patch(`/admin/rooms/${roomId}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "INACTIVE" }).expect(200);
     const response = await request(app).get(`/rooms/availability?date=${futureDate}`);
     expect(response.body).toEqual([]);
   });
 
-  it("blocks a booking when an admin closes the room for that date", async () => {
+  it("[TC-API-06] blocks a booking when an admin closes the room for that date", async () => {
     await request(app).post(`/admin/rooms/${roomId}/closures`).set("authorization", `Bearer ${adminToken}`).send({ date: futureDate, reason: "Bảo trì máy chiếu" }).expect(201);
     const response = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "12:00" });
     expect(response.status).toBe(422); expect(response.body.error).toBe("ROOM_CLOSED");
   });
 
-  it("allows an owner to cancel an eligible future booking", async () => {
+  it("[TC-API-07] allows an owner to cancel an eligible future booking", async () => {
     const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "13:00" }).expect(201);
     const cancelled = await request(app).patch(`/bookings/${created.body.id}/cancel`).set("authorization", `Bearer ${studentToken}`);
     expect(cancelled.status).toBe(200); expect(cancelled.body.status).toBe("CANCELLED");
@@ -120,16 +120,35 @@ describe.sequential("StudySpace API", () => {
     await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "13:00" }).expect(201);
   });
 
-  it("returns admin usage metrics from real booking data", async () => {
-    await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "14:00" }).expect(201);
-    const response = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${futureDate}`).set("authorization", `Bearer ${adminToken}`);
-    expect(response.status).toBe(200); expect(response.body.range).toEqual({ from: futureDate, to: futureDate }); expect(response.body.totals).toMatchObject({ bookings: 1, occupancyRate: 7.14 }); expect(response.body.rooms[0]).toMatchObject({ roomName: "A101", bookings: 1 });
+  it("[TC-API-08] returns admin usage metrics from real booking data", async () => {
+    const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "14:00" }).expect(201);
+    const reserved = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${futureDate}`).set("authorization", `Bearer ${adminToken}`);
+    expect(reserved.status).toBe(200); expect(reserved.body.range).toEqual({ from: futureDate, to: futureDate }); expect(reserved.body.totals).toMatchObject({ bookings: 1, reservationRate: 7.14, utilizationRate: 0, occupancyRate: 7.14 }); expect(reserved.body.rooms[0]).toMatchObject({ roomName: "A101", bookings: 1 });
+    await request(app).patch(`/admin/bookings/${created.body.id}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "CHECKED_IN" }).expect(200);
+    const used = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${futureDate}`).set("authorization", `Bearer ${adminToken}`);
+    expect(used.body.totals).toMatchObject({ bookings: 1, checkedIn: 1, reservationRate: 7.14, utilizationRate: 7.14, occupancyRate: 7.14 });
+    await request(app).patch(`/admin/rooms/${roomId}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "INACTIVE" }).expect(200);
+    const noAvailableSlots = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${futureDate}`).set("authorization", `Bearer ${adminToken}`);
+    expect(noAvailableSlots.body.totals).toMatchObject({ bookings: 0, reservationRate: 0, utilizationRate: 0, occupancyRate: 0 });
+    await request(app).patch(`/admin/rooms/${roomId}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "ACTIVE" }).expect(200);
+    const cancelled = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "15:00" }).expect(201);
+    await request(app).patch(`/bookings/${cancelled.body.id}/cancel`).set("authorization", `Bearer ${studentToken}`).expect(200);
+    const noShow = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "16:00" }).expect(201);
+    await request(app).patch(`/admin/bookings/${noShow.body.id}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "NO_SHOW" }).expect(200);
+    const finalReport = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${futureDate}`).set("authorization", `Bearer ${adminToken}`);
+    expect(finalReport.body.totals).toMatchObject({ bookings: 2, checkedIn: 1, noShow: 1, reservationRate: 14.29, utilizationRate: 7.14, occupancyRate: 14.29 });
     const previousDate = new Date(`${futureDate}T00:00:00`); previousDate.setDate(previousDate.getDate() - 1);
-    const invalidRange = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${previousDate.toISOString().slice(0, 10)}`).set("authorization", `Bearer ${adminToken}`);
-    expect(invalidRange.status).toBe(422); expect(invalidRange.body.error).toBe("INVALID_REPORT_RANGE");
   });
 
-  it("registers, logs in and returns the authenticated profile", async () => {
+  it("[TC-API-32] rejects a reversed report range", async () => {
+    const previousDate = new Date(`${futureDate}T00:00:00+07:00`);
+    previousDate.setDate(previousDate.getDate() - 1);
+    const response = await request(app).get(`/admin/reports/usage?from=${futureDate}&to=${previousDate.toISOString().slice(0, 10)}`).set("authorization", `Bearer ${adminToken}`);
+    expect(response.status).toBe(422);
+    expect(response.body.error).toBe("INVALID_REPORT_RANGE");
+  });
+
+  it("[TC-API-09] registers, logs in and returns the authenticated profile", async () => {
     const registered = await request(app).post("/auth/register").send({ name: "New Student", email: "new@test.local", password: "Password123!" });
     expect(registered.status).toBe(201);
     const loggedIn = await request(app).post("/auth/login").send({ email: "new@test.local", password: "Password123!" });
@@ -138,7 +157,7 @@ describe.sequential("StudySpace API", () => {
     expect(profile.body).toMatchObject({ email: "new@test.local", role: "STUDENT" });
   });
 
-  it("validates registration, profile updates and unauthenticated profile access", async () => {
+  it("[TC-API-22] validates registration, profile updates and unauthenticated profile access", async () => {
     await request(app).post("/auth/register").send({ name: "A", email: "invalid", password: "short" }).expect(422);
     await request(app).get("/auth/me").expect(401);
     const invalidUpdate = await request(app).patch("/auth/me").set("authorization", `Bearer ${studentToken}`).send({ name: "", email: "not-an-email" });
@@ -146,13 +165,13 @@ describe.sequential("StudySpace API", () => {
     expect(invalidUpdate.body.error).toBe("VALIDATION_ERROR");
   });
 
-  it("rejects invalid credentials and invalid booking input", async () => {
+  it("[TC-API-10] rejects invalid credentials and invalid booking input", async () => {
     await request(app).post("/auth/login").send({ email: "student@test.local", password: "wrong" }).expect(401);
     const response = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "10:30" });
     expect(response.status).toBe(422); expect(response.body.error).toBe("INVALID_SLOT");
   });
 
-  it("filters active rooms and lets an admin create a room with equipment", async () => {
+  it("[TC-API-11] filters active rooms and lets an admin create a room with equipment", async () => {
     const created = await request(app).post("/admin/rooms").set("authorization", `Bearer ${adminToken}`).send({ name: "B202", capacity: 20, location: "B2", equipment: ["Máy chiếu"] });
     expect(created.status).toBe(201); expect(created.body.equipment[0].equipment.name).toBe("Máy chiếu");
     const response = await request(app).get("/rooms?minCapacity=15&equipment=M%C3%A1y%20chi%E1%BA%BFu");
@@ -161,7 +180,7 @@ describe.sequential("StudySpace API", () => {
     expect(projectorRooms.body.map((room: { name: string }) => room.name)).toEqual(["B202"]);
   });
 
-  it("validates public availability dates and excludes rooms that do not meet capacity", async () => {
+  it("[TC-API-23] validates public availability dates and excludes rooms that do not meet capacity", async () => {
     const invalid = await request(app).get("/rooms/availability?date=tomorrow");
     expect(invalid.status).toBe(422);
     expect(invalid.body.error).toBe("VALIDATION_ERROR");
@@ -172,7 +191,7 @@ describe.sequential("StudySpace API", () => {
     await request(app).get("/rooms/availability?date=2026-02-31").expect(422);
   });
 
-  it("rejects concurrent bookings by the same student in different rooms", async () => {
+  it("[TC-API-29] rejects concurrent bookings by the same student in different rooms", async () => {
     const secondRoom = await prisma.room.create({ data: { name: "B102", capacity: 10, location: "B1" } });
     const reserve = (targetRoomId: string) => request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId: targetRoomId, date: futureDate, startTime: "10:00" });
     const results = await Promise.all([reserve(roomId), reserve(secondRoom.id)]);
@@ -180,20 +199,20 @@ describe.sequential("StudySpace API", () => {
     expect(results.find((result) => result.status === 409)?.body.error).toBe("STUDENT_CONFLICT");
   });
 
-  it("protects booking ownership and exposes booking lists to their intended roles", async () => {
+  it("[TC-API-12] protects booking ownership and exposes booking lists to their intended roles", async () => {
     const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "15:00" }).expect(201);
     expect((await request(app).get("/bookings/me").set("authorization", `Bearer ${studentToken}`)).body).toHaveLength(1);
     expect((await request(app).patch(`/bookings/${created.body.id}/cancel`).set("authorization", `Bearer ${adminToken}`)).status).toBe(403);
     expect((await request(app).get(`/admin/bookings?date=${futureDate}`).set("authorization", `Bearer ${adminToken}`)).body).toHaveLength(1);
   });
 
-  it("denies check-in outside its allowed time window", async () => {
+  it("[TC-API-13] denies check-in outside its allowed time window", async () => {
     const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "16:00" }).expect(201);
     const response = await request(app).patch(`/bookings/${created.body.id}/check-in`).set("authorization", `Bearer ${studentToken}`);
     expect(response.status).toBe(422); expect(response.body.error).toBe("CHECKIN_NOT_ALLOWED");
   });
 
-  it("allows an owner to check in during the configured time window", async () => {
+  it("[TC-API-36] allows an owner to check in during the configured time window", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-02T08:50:00"));
     try {
@@ -206,7 +225,7 @@ describe.sequential("StudySpace API", () => {
       vi.useRealTimers();
     }
   });
-  it("returns not-found contracts for booking actions", async () => {
+  it("[TC-API-24] returns not-found contracts for booking actions", async () => {
     const cancel = await request(app).patch("/bookings/missing-booking/cancel").set("authorization", `Bearer ${studentToken}`);
     expect(cancel.status).toBe(404);
     expect(cancel.body.error).toBe("BOOKING_NOT_FOUND");
@@ -214,7 +233,7 @@ describe.sequential("StudySpace API", () => {
     expect(checkIn.status).toBe(404);
     expect(checkIn.body.error).toBe("BOOKING_NOT_FOUND");
   });
-  it("allows admins to list users and change another user role with an audit trail", async () => {
+  it("[TC-API-14] allows admins to list users and change another user role with an audit trail", async () => {
     const users = await request(app).get("/admin/users").set("authorization", `Bearer ${adminToken}`);
     expect(users.status).toBe(200); expect(users.body).toHaveLength(2);
     const student = users.body.find((user: { email: string }) => user.email === "student@test.local");
@@ -223,7 +242,7 @@ describe.sequential("StudySpace API", () => {
     expect(await prisma.auditLog.count({ where: { action: "USER_ROLE_CHANGED" } })).toBe(1);
   });
 
-  it("rejects invalid administrative room, closure and role changes", async () => {
+  it("[TC-API-25] rejects invalid administrative room, closure and role changes", async () => {
     const invalidStatus = await request(app).patch(`/admin/rooms/${roomId}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "ARCHIVED" });
     expect(invalidStatus.status).toBe(422);
     const invalidClosure = await request(app).post(`/admin/rooms/${roomId}/closures`).set("authorization", `Bearer ${adminToken}`).send({ date: futureDate, reason: "x" });
@@ -234,7 +253,7 @@ describe.sequential("StudySpace API", () => {
     expect(selfDemotion.body.error).toBe("SELF_ROLE_CHANGE_FORBIDDEN");
   });
 
-  it("returns the standard not-found contract when creating a closure for an unknown room", async () => {
+  it("[TC-API-34] returns the standard not-found contract when creating a closure for an unknown room", async () => {
     const response = await request(app)
       .post("/admin/rooms/missing-room/closures")
       .set("authorization", `Bearer ${adminToken}`)
@@ -244,7 +263,7 @@ describe.sequential("StudySpace API", () => {
     expect(response.body.error).toBe("NOT_FOUND");
   });
 
-  it("manages unused equipment and protects equipment attached to a room", async () => {
+  it("[TC-API-15] manages unused equipment and protects equipment attached to a room", async () => {
     const created = await request(app).post("/admin/equipment").set("authorization", `Bearer ${adminToken}`).send({ name: "Loa" }).expect(201);
     expect((await request(app).get("/admin/equipment").set("authorization", `Bearer ${adminToken}`)).body[0].name).toBe("Loa");
     await request(app).delete(`/admin/equipment/${created.body.id}`).set("authorization", `Bearer ${adminToken}`).expect(204);
@@ -254,7 +273,7 @@ describe.sequential("StudySpace API", () => {
     expect(blocked.status).toBe(422); expect(blocked.body.error).toBe("EQUIPMENT_IN_USE");
   });
 
-  it("lets admins update rooms and manage closure records", async () => {
+  it("[TC-API-16] lets admins update rooms and manage closure records", async () => {
     const updated = await request(app).patch(`/admin/rooms/${roomId}`).set("authorization", `Bearer ${adminToken}`).send({ capacity: 12, location: "A2" });
     expect(updated.status).toBe(200); expect(updated.body.capacity).toBe(12);
     const rooms = await request(app).get("/admin/rooms").set("authorization", `Bearer ${adminToken}`);
@@ -265,7 +284,7 @@ describe.sequential("StudySpace API", () => {
     expect(await prisma.auditLog.count({ where: { action: "ROOM_CLOSURE_DELETED" } })).toBe(1);
   });
 
-  it("validates room patches, equipment assignment and closure deletion", async () => {
+  it("[TC-API-26] validates room patches, equipment assignment and closure deletion", async () => {
     const emptyPatch = await request(app).patch(`/admin/rooms/${roomId}`).set("authorization", `Bearer ${adminToken}`).send({});
     expect(emptyPatch.status).toBe(422);
     const unknownEquipment = await request(app).patch(`/admin/rooms/${roomId}/equipment`).set("authorization", `Bearer ${adminToken}`).send({ equipmentIds: ["missing-equipment"] });
@@ -276,20 +295,29 @@ describe.sequential("StudySpace API", () => {
     expect(missingClosure.body.error).toBe("NOT_FOUND");
   });
 
-  it("allows an authenticated user to update their profile", async () => {
+  it("[TC-API-17] updates a profile atomically with its audit log", async () => {
     const response = await request(app).patch("/auth/me").set("authorization", `Bearer ${studentToken}`).send({ name: "Updated Student", email: "updated@test.local" });
     expect(response.status).toBe(200); expect(response.body).toMatchObject({ name: "Updated Student", email: "updated@test.local" });
     expect(await prisma.auditLog.count({ where: { action: "PROFILE_UPDATED" } })).toBe(1);
+    await prisma.$executeRawUnsafe(`CREATE TRIGGER reject_profile_audit BEFORE INSERT ON "AuditLog" WHEN NEW.action = 'PROFILE_UPDATED' BEGIN SELECT RAISE(ABORT, 'forced audit failure'); END`);
+    try {
+      const failed = await request(app).patch("/auth/me").set("authorization", `Bearer ${studentToken}`).send({ name: "Must Roll Back", email: "rollback@test.local" });
+      expect(failed.status).toBe(500);
+      expect(await prisma.user.findUniqueOrThrow({ where: { email: "updated@test.local" }, select: { name: true } })).toEqual({ name: "Updated Student" });
+      expect(await prisma.user.count({ where: { email: "rollback@test.local" } })).toBe(0);
+    } finally {
+      await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS reject_profile_audit`);
+    }
   });
 
-  it("lets admins assign equipment to a room", async () => {
+  it("[TC-API-18] lets admins assign equipment to a room", async () => {
     const equipment = await prisma.equipment.create({ data: { name: "Bảng trắng" } });
     const response = await request(app).patch(`/admin/rooms/${roomId}/equipment`).set("authorization", `Bearer ${adminToken}`).send({ equipmentIds: [equipment.id] });
     expect(response.status).toBe(200); expect(response.body.equipment[0].equipment.name).toBe("Bảng trắng");
     expect(await prisma.auditLog.count({ where: { action: "ROOM_EQUIPMENT_UPDATED" } })).toBe(1);
   });
 
-  it("lets admins mark a booking as no-show", async () => {
+  it("[TC-API-19] lets admins mark a booking as no-show", async () => {
     const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "17:00" }).expect(201);
     const response = await request(app).patch(`/admin/bookings/${created.body.id}/status`).set("authorization", `Bearer ${adminToken}`).send({ status: "NO_SHOW" });
     expect(response.status).toBe(200); expect(response.body.status).toBe("NO_SHOW");
@@ -299,7 +327,7 @@ describe.sequential("StudySpace API", () => {
     await request(app).post("/bookings").set("authorization", `Bearer ${createToken(secondStudent)}`).send({ roomId, date: futureDate, startTime: "17:00" }).expect(201);
   });
 
-  it("validates administrative booking filters and status changes", async () => {
+  it("[TC-API-27] validates administrative booking filters and status changes", async () => {
     const invalidFilter = await request(app).get("/admin/bookings?date=2026/10/01").set("authorization", `Bearer ${adminToken}`);
     expect(invalidFilter.status).toBe(422);
     const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: futureDate, startTime: "18:00" }).expect(201);
@@ -308,7 +336,7 @@ describe.sequential("StudySpace API", () => {
     expect(invalidStatus.body.error).toBe("VALIDATION_ERROR");
   });
 
-  it("enforces administration authorization for every protected endpoint", async () => {
+  it("[TC-API-28] enforces administration authorization for every protected endpoint", async () => {
     const requests = [
       request(app).get("/admin/users"), request(app).get("/admin/equipment"), request(app).get("/admin/rooms"), request(app).get("/admin/bookings"), request(app).get("/admin/reports/usage"),
       request(app).post("/admin/rooms").send({}), request(app).patch(`/admin/rooms/${roomId}/status`).send({}), request(app).post(`/admin/rooms/${roomId}/closures`).send({}), request(app).patch(`/admin/users/missing-user/role`).send({}),
@@ -322,7 +350,7 @@ describe.sequential("StudySpace API", () => {
     }
   });
 
-  it("rejects expired tokens and emits baseline security headers", async () => {
+  it("[TC-API-20] rejects expired tokens and emits baseline security headers", async () => {
     const expired = jwt.sign({ email: "student@test.local", role: Role.STUDENT }, process.env.JWT_SECRET || "studyspace-development-secret-change-me", { subject: "expired-user", expiresIn: -1 });
     const expiredResponse = await request(app).get("/bookings/me").set("authorization", `Bearer ${expired}`);
     expect(expiredResponse.status).toBe(401); expect(expiredResponse.body.error).toBe("INVALID_TOKEN");

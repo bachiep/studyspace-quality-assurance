@@ -12,7 +12,9 @@ jobs:
       - run: npm ci
       - run: npm audit --omit=dev --omit=optional --audit-level=high
       - run: npm run db:generate
+      - run: npm run db:prepare-file --workspace backend
       - run: npm run prisma:migrate:deploy --workspace backend
+      - run: npm run qa:trace
       - run: npm test
       - run: npm run test:mutation
       - run: npm run build
@@ -21,9 +23,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: quality-evidence
+          name: core-quality-${{ github.sha }}
           path: |
             backend/coverage
             reports/generated/playwright
+            reports/generated/playwright-results.json
             reports/generated/stryker
           if-no-files-found: warn

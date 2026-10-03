@@ -4,17 +4,17 @@
 
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
-| Unit + property-based + API (Vitest) | 43/43 pass (5 unit, 3 property-based, 35 API/configuration) | `backend/tests`, `docs/evidence/coverage-summary.json`, CI quality run |
-| Coverage V8 | 97.23% line, 91.21% branch, 94.11% function | `docs/evidence/coverage-summary.json` |
-| Mutation testing | 57 killed / 6 survived / 5 compile-error mutants; score 90.48% | `docs/evidence/stryker-summary.json`, CI mutation step |
-| E2E Chromium | 20/20 pass trên Desktop Chrome và Pixel 5 | `tests/e2e/studyspace.spec.ts`, `docs/assets/student-dashboard.png`, `docs/assets/admin-dashboard.png`, CI E2E step |
-| Axe login | 0 vi phạm serious/critical | `tests/e2e/studyspace.spec.ts`, CI E2E step |
-| Lighthouse production (full categories) | Performance 100; Accessibility 100; Best Practices 96; SEO 82 | `docs/evidence/lighthouse-production-summary.json` |
-| k6 availability | 20 VUs/2 phút; 2,382 requests; 19.69 req/s; error 0%; p95 17.47 ms; exit 0 | `docs/evidence/k6-summary.json` |
-| k6 booking race | 20 VUs; 1 response 201, 19 response 409; error 0%; p95 292.09 ms; exit 0 | `docs/evidence/k6-booking-race-summary.json` |
-| OWASP ZAP production baseline | 0 High, 0 Medium, 0 Low, 2 Informational | `docs/evidence/zap-summary.json`, CI security step |
+| Unit + property-based + API (Vitest) | 47/47 pass (11 domain/property-based, 36 API/configuration) | `backend/tests`, CI quality run |
+| Coverage V8 | 98.27% line, 93.92% branch, 100% function | `backend/coverage/coverage-summary.json` |
+| Mutation testing | 88 killed / 16 survived / 2 no-coverage / 26 compile-error; score 83.02% | `reports/generated/stryker/mutation.json`, CI mutation step |
+| E2E Chromium | 24/24 pass trên Desktop Chrome và Pixel 5; 12 scenario | `tests/e2e/studyspace.spec.ts`, Playwright artifact |
+| Axe login/student/admin | 0 vi phạm serious/critical trong ba trang | `tests/e2e/studyspace.spec.ts`, CI E2E step |
+| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | `reports/generated/lighthouse/report.json` |
+| k6 availability | 20 VUs/2 phút; 2,390 requests; checks 100%; error 0%; p95 15.98 ms | `reports/generated/k6/availability-summary.json` |
+| k6 booking race | 20 VUs; 1 response 201, 19 response 409; checks 100%; error 0%; p95 370.25 ms | `reports/generated/k6/booking-race-summary.json` (JWT sanitized) |
+| OWASP ZAP baseline | Chưa chạy local; không kết luận Pass | `quality-evidence.yml` sẽ tạo artifact release |
 | Runtime dependency audit | 0 High/critical vulnerabilities (`--omit=dev --omit=optional`) | CI security step |
-| Fresh-clone bootstrap | `npm ci`, Prisma generate và production build pass từ clone sạch tại `8a516df` | `docs/evidence/fresh-clone-verification.json` |
+| Fresh-clone bootstrap | Evidence cũ gắn `8a516df`; cần chạy lại trên final SHA | `docs/evidence/fresh-clone-verification.json` |
 | Database migration isolation | Migrations áp thành công từ database test trắng trước unit/API và E2E | `docs/evidence/bootstrap-summary.json`, CI quality run |
 
 ## Quyết định chất lượng
@@ -24,13 +24,13 @@
 - Token hết hạn bị từ chối, Helmet phát security headers và CORS chỉ cấp cho origin frontend được cấu hình; bằng chứng API nằm trong `backend/tests/api.spec.ts`.
 - Login không thành công bị giới hạn theo client; ngưỡng/cửa sổ cấu hình qua môi trường và vượt ngưỡng trả `429` `AUTH_RATE_LIMITED`.
 - Phòng có lịch sử được chuyển `INACTIVE`, không xóa dữ liệu nghiệp vụ.
-- Axe và Lighthouse production đạt ngưỡng accessibility/best practices đã đặt.
+- Axe và Lighthouse production preview đạt ngưỡng accessibility/best practices đã đặt; Performance đạt 100 trong lần chạy này.
 - Luồng E2E chạy tuần tự qua desktop/mobile để cùng database test không tạo xung đột giả giữa các project.
-- ZAP production baseline không có alert High/Medium/Low; hai informational alert được giữ nguyên trong report.
+- ZAP chưa có artifact trên local final candidate; không được diễn giải là đã pass.
 
 ## Evidence đã đóng
 
-- Stryker mutation score đã đạt 90.48% (mục tiêu ≥60%).
-- OWASP ZAP production baseline đã chạy, không có High/Medium/Low.
+- Stryker mutation score local hiện đạt 83.02% (mục tiêu ≥60%).
+- OWASP ZAP là mục bắt buộc của release workflow và vẫn đang chờ artifact final.
 
 Hai mục được ghi nhận từ report thực tế, không suy diễn từ các test khác.

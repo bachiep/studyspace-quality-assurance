@@ -7,6 +7,7 @@ const created = new Counter("booking_created");
 const conflicts = new Counter("booking_conflict");
 const expectedOutcome = new Rate("expected_booking_outcome");
 const bookingResponse = http.expectedStatuses(201, 409);
+export const testCaseId = "TC-NF-02";
 
 export const options = {
   scenarios: {
@@ -19,6 +20,7 @@ export const options = {
     }
   },
   thresholds: {
+    checks: ["rate==1"],
     http_req_failed: ["rate==0"],
     expected_booking_outcome: ["rate==1"],
     booking_created: ["count==1"],

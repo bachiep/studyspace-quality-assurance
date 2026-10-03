@@ -6,7 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { z } from "zod";
 import { createToken, hashPassword, requireAdmin, requireAuth, verifyPassword } from "./auth.js";
-import { canCancel, canCheckIn, DomainError, endFor, validateBookingDate, validateNotPast, validateSlot } from "./domain/booking-policy.js";
+import { businessDateString, canCancel, canCheckIn, DomainError, endFor, validateBookingDate, validateNotPast, validateSlot } from "./domain/booking-policy.js";
 import { prisma } from "./db.js";
 
 const asyncRoute = (handler: express.RequestHandler): express.RequestHandler => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
@@ -74,8 +74,11 @@ export function createApp() {
 
   app.patch("/auth/me", requireAuth, asyncRoute(async (req, res) => {
     const input = z.object({ name: z.string().trim().min(2).max(80), email: z.string().email() }).parse(req.body);
-    const user = await prisma.user.update({ where: { id: req.user!.id }, data: { name: input.name, email: input.email.toLowerCase() }, select: { id: true, name: true, email: true, role: true } });
-    await audit(prisma, req.user!.id, "PROFILE_UPDATED", "User", user.id, { name: user.name, email: user.email });
+    const user = await prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({ where: { id: req.user!.id }, data: { name: input.name, email: input.email.toLowerCase() }, select: { id: true, name: true, email: true, role: true } });
+      await audit(tx, req.user!.id, "PROFILE_UPDATED", "User", updated.id, { name: updated.name, email: updated.email });
+      return updated;
+    });
     res.json(user);
   }));
 
@@ -145,24 +148,33 @@ export function createApp() {
 
   app.post("/admin/rooms", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ name: z.string().trim().min(2), capacity: z.number().int().min(1).max(500), location: z.string().trim().min(2), equipment: z.array(z.string().trim().min(1)).default([]) }).parse(req.body);
-    const room = await prisma.room.create({ data: { name: input.name, capacity: input.capacity, location: input.location, equipment: { create: input.equipment.map((name) => ({ equipment: { connectOrCreate: { where: { name }, create: { name } } } })) } }, include: { equipment: { include: { equipment: true } } } });
-    await audit(prisma, req.user!.id, "ROOM_CREATED", "Room", room.id);
+    const room = await prisma.$transaction(async (tx) => {
+      const created = await tx.room.create({ data: { name: input.name, capacity: input.capacity, location: input.location, equipment: { create: input.equipment.map((name) => ({ equipment: { connectOrCreate: { where: { name }, create: { name } } } })) } }, include: { equipment: { include: { equipment: true } } } });
+      await audit(tx, req.user!.id, "ROOM_CREATED", "Room", created.id);
+      return created;
+    });
     res.status(201).json(room);
   }));
 
   app.patch("/admin/rooms/:id/status", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ status: z.nativeEnum(RoomStatus) }).parse(req.body);
-    const room = await prisma.room.update({ where: { id: String(req.params.id) }, data: { status: input.status } });
-    await audit(prisma, req.user!.id, "ROOM_STATUS_CHANGED", "Room", room.id, { status: room.status });
+    const room = await prisma.$transaction(async (tx) => {
+      const updated = await tx.room.update({ where: { id: String(req.params.id) }, data: { status: input.status } });
+      await audit(tx, req.user!.id, "ROOM_STATUS_CHANGED", "Room", updated.id, { status: updated.status });
+      return updated;
+    });
     res.json(room);
   }));
 
   app.post("/admin/rooms/:id/closures", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ date: dateSchema, reason: z.string().trim().min(3).max(200) }).parse(req.body);
     const roomId = String(req.params.id);
-    await prisma.room.findUniqueOrThrow({ where: { id: roomId }, select: { id: true } });
-    const closure = await prisma.roomClosure.create({ data: { roomId, ...input } });
-    await audit(prisma, req.user!.id, "ROOM_CLOSED", "RoomClosure", closure.id, input);
+    const closure = await prisma.$transaction(async (tx) => {
+      await tx.room.findUniqueOrThrow({ where: { id: roomId }, select: { id: true } });
+      const created = await tx.roomClosure.create({ data: { roomId, ...input } });
+      await audit(tx, req.user!.id, "ROOM_CLOSED", "RoomClosure", created.id, input);
+      return created;
+    });
     res.status(201).json(closure);
   }));
 
@@ -173,8 +185,11 @@ export function createApp() {
   app.patch("/admin/users/:id/role", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ role: z.nativeEnum(Role) }).parse(req.body);
     if (String(req.params.id) === req.user!.id && input.role !== Role.ADMIN) throw new DomainError("SELF_ROLE_CHANGE_FORBIDDEN", "Không thể tự gỡ quyền quản trị.");
-    const user = await prisma.user.update({ where: { id: String(req.params.id) }, data: input, select: { id: true, name: true, email: true, role: true } });
-    await audit(prisma, req.user!.id, "USER_ROLE_CHANGED", "User", user.id, { role: user.role });
+    const user = await prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({ where: { id: String(req.params.id) }, data: input, select: { id: true, name: true, email: true, role: true } });
+      await audit(tx, req.user!.id, "USER_ROLE_CHANGED", "User", updated.id, { role: updated.role });
+      return updated;
+    });
     res.json(user);
   }));
 
@@ -184,16 +199,21 @@ export function createApp() {
 
   app.post("/admin/equipment", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ name: z.string().trim().min(2).max(80) }).parse(req.body);
-    const equipment = await prisma.equipment.create({ data: input });
-    await audit(prisma, req.user!.id, "EQUIPMENT_CREATED", "Equipment", equipment.id, input);
+    const equipment = await prisma.$transaction(async (tx) => {
+      const created = await tx.equipment.create({ data: input });
+      await audit(tx, req.user!.id, "EQUIPMENT_CREATED", "Equipment", created.id, input);
+      return created;
+    });
     res.status(201).json(equipment);
   }));
 
   app.delete("/admin/equipment/:id", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
-    const equipment = await prisma.equipment.findUniqueOrThrow({ where: { id: String(req.params.id) }, include: { _count: { select: { rooms: true } } } });
-    if (equipment._count.rooms) throw new DomainError("EQUIPMENT_IN_USE", "Không thể xóa thiết bị đang được gán cho phòng.");
-    await prisma.equipment.delete({ where: { id: equipment.id } });
-    await audit(prisma, req.user!.id, "EQUIPMENT_DELETED", "Equipment", equipment.id, { name: equipment.name });
+    await prisma.$transaction(async (tx) => {
+      const equipment = await tx.equipment.findUniqueOrThrow({ where: { id: String(req.params.id) }, include: { _count: { select: { rooms: true } } } });
+      if (equipment._count.rooms) throw new DomainError("EQUIPMENT_IN_USE", "Không thể xóa thiết bị đang được gán cho phòng.");
+      await tx.equipment.delete({ where: { id: equipment.id } });
+      await audit(tx, req.user!.id, "EQUIPMENT_DELETED", "Equipment", equipment.id, { name: equipment.name });
+    });
     res.status(204).end();
   }));
 
@@ -203,8 +223,11 @@ export function createApp() {
 
   app.patch("/admin/rooms/:id", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
     const input = z.object({ name: z.string().trim().min(2).optional(), capacity: z.number().int().min(1).max(500).optional(), location: z.string().trim().min(2).optional(), status: z.nativeEnum(RoomStatus).optional() }).refine((value) => Object.keys(value).length > 0, "Cần ít nhất một trường để cập nhật.").parse(req.body);
-    const room = await prisma.room.update({ where: { id: String(req.params.id) }, data: input });
-    await audit(prisma, req.user!.id, "ROOM_UPDATED", "Room", room.id, input);
+    const room = await prisma.$transaction(async (tx) => {
+      const updated = await tx.room.update({ where: { id: String(req.params.id) }, data: input });
+      await audit(tx, req.user!.id, "ROOM_UPDATED", "Room", updated.id, input);
+      return updated;
+    });
     res.json(room);
   }));
 
@@ -218,9 +241,10 @@ export function createApp() {
       });
       await tx.roomEquipment.deleteMany({ where: { roomId } });
       if (input.equipmentIds.length) await tx.roomEquipment.createMany({ data: [...new Set(input.equipmentIds)].map((equipmentId) => ({ roomId, equipmentId })) });
-      return tx.room.findUniqueOrThrow({ where: { id: roomId }, include: { equipment: { include: { equipment: true } } } });
+      const updated = await tx.room.findUniqueOrThrow({ where: { id: roomId }, include: { equipment: { include: { equipment: true } } } });
+      await audit(tx, req.user!.id, "ROOM_EQUIPMENT_UPDATED", "Room", updated.id, { equipmentIds: input.equipmentIds });
+      return updated;
     });
-    await audit(prisma, req.user!.id, "ROOM_EQUIPMENT_UPDATED", "Room", room.id, { equipmentIds: input.equipmentIds });
     res.json(room);
   }));
 
@@ -229,8 +253,10 @@ export function createApp() {
   }));
 
   app.delete("/admin/closures/:id", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
-    const closure = await prisma.roomClosure.delete({ where: { id: String(req.params.id) } });
-    await audit(prisma, req.user!.id, "ROOM_CLOSURE_DELETED", "RoomClosure", closure.id, { roomId: closure.roomId, date: closure.date });
+    await prisma.$transaction(async (tx) => {
+      const closure = await tx.roomClosure.delete({ where: { id: String(req.params.id) } });
+      await audit(tx, req.user!.id, "ROOM_CLOSURE_DELETED", "RoomClosure", closure.id, { roomId: closure.roomId, date: closure.date });
+    });
     res.status(204).end();
   }));
   app.get("/admin/bookings", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
@@ -255,19 +281,21 @@ export function createApp() {
   }));
 
   app.get("/admin/reports/usage", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
-    const today = new Date();
-    const defaultFrom = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const defaultTo = new Date(defaultFrom); defaultTo.setDate(defaultTo.getDate() + 14);
-    const formatDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    const from = dateSchema.parse(req.query.from ?? formatDate(defaultFrom));
-    const to = dateSchema.parse(req.query.to ?? formatDate(defaultTo));
+    const defaultFrom = businessDateString();
+    const defaultToDate = new Date(`${defaultFrom}T00:00:00Z`); defaultToDate.setUTCDate(defaultToDate.getUTCDate() + 14);
+    const defaultTo = defaultToDate.toISOString().slice(0, 10);
+    const from = dateSchema.parse(req.query.from ?? defaultFrom);
+    const to = dateSchema.parse(req.query.to ?? defaultTo);
     if (from > to) throw new DomainError("INVALID_REPORT_RANGE", "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.");
     const activeRooms = await prisma.room.findMany({ where: { status: RoomStatus.ACTIVE }, include: { closures: { where: { date: { gte: from, lte: to } } } } });
     const bookings = await prisma.booking.findMany({ where: { date: { gte: from, lte: to }, status: { in: [BookingStatus.BOOKED, BookingStatus.CHECKED_IN, BookingStatus.NO_SHOW] }, room: { status: RoomStatus.ACTIVE } }, include: { room: true } });
     const roomCounts = bookings.reduce<Record<string, { roomName: string; bookings: number }>>((acc, booking) => { acc[booking.roomId] ??= { roomName: booking.room.name, bookings: 0 }; acc[booking.roomId].bookings += 1; return acc; }, {});
     const days = Math.floor((Date.parse(`${to}T00:00:00`) - Date.parse(`${from}T00:00:00`)) / 86_400_000) + 1;
     const availableSlots = activeRooms.reduce((total, room) => total + (days - room.closures.length) * 14, 0);
-    res.json({ range: { from, to }, totals: { bookings: bookings.length, checkedIn: bookings.filter((b) => b.status === BookingStatus.CHECKED_IN).length, noShow: bookings.filter((b) => b.status === BookingStatus.NO_SHOW).length, occupancyRate: availableSlots ? Number(Math.min(100, bookings.length / availableSlots * 100).toFixed(2)) : 0 }, rooms: Object.values(roomCounts).sort((a, b) => b.bookings - a.bookings) });
+    const checkedIn = bookings.filter((booking) => booking.status === BookingStatus.CHECKED_IN).length;
+    const reservationRate = availableSlots ? Number(Math.min(100, bookings.length / availableSlots * 100).toFixed(2)) : 0;
+    const utilizationRate = availableSlots ? Number(Math.min(100, checkedIn / availableSlots * 100).toFixed(2)) : 0;
+    res.json({ range: { from, to }, totals: { bookings: bookings.length, checkedIn, noShow: bookings.filter((b) => b.status === BookingStatus.NO_SHOW).length, reservationRate, utilizationRate, occupancyRate: reservationRate }, rooms: Object.values(roomCounts).sort((a, b) => b.bookings - a.bookings) });
   }));
 
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

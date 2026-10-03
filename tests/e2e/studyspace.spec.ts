@@ -9,7 +9,13 @@ async function login(page: import("@playwright/test").Page, email: string) {
   await page.getByRole("button", { name: "Đăng nhập" }).click();
 }
 
-test("student can reserve then cancel a future room slot", async ({ page }) => {
+function expectNoSeriousViolations(results: Awaited<ReturnType<AxeBuilder["analyze"]>>) {
+  const violations = results.violations.filter((item) => ["critical", "serious"].includes(item.impact ?? ""));
+  const evidence = violations.map((item) => ({ id: item.id, impact: item.impact, targets: item.nodes.map((node) => node.target) }));
+  expect(violations, JSON.stringify(evidence, null, 2)).toEqual([]);
+}
+
+test("[TC-E2E-01] student can reserve then cancel a future room slot", async ({ page }) => {
   await login(page, "student@studyspace.local");
   await expect(page.getByRole("heading", { name: "Chọn không gian, giữ nhịp tập trung" })).toBeVisible();
   await page.getByLabel("Ngày học").fill(tomorrow());
@@ -21,7 +27,7 @@ test("student can reserve then cancel a future room slot", async ({ page }) => {
   await expect(page.getByText("Đã hủy lịch đặt.")).toBeVisible();
 });
 
-test("admin sees the operational report and creates a room", async ({ page }) => {
+test("[TC-E2E-02] admin sees the operational report and creates a room", async ({ page }) => {
   await login(page, "admin@studyspace.local");
   await expect(page.getByRole("heading", { name: "Vận hành không gian học tập" })).toBeVisible();
   await page.getByLabel("Tên phòng").fill(`E505-${Date.now()}`);
@@ -31,7 +37,7 @@ test("admin sees the operational report and creates a room", async ({ page }) =>
   await expect(page.getByText("Đã tạo phòng mới và lưu audit log.")).toBeVisible();
 });
 
-test("invalid credentials are explained to the user", async ({ page }) => {
+test("[TC-E2E-03] invalid credentials are explained to the user", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Email").fill("student@studyspace.local");
   await page.getByLabel("Mật khẩu").fill("not-the-password");
@@ -39,7 +45,7 @@ test("invalid credentials are explained to the user", async ({ page }) => {
   await expect(page.getByRole("alert")).toContainText("Email hoặc mật khẩu không chính xác.");
 });
 
-test("new student can register and enter the booking portal", async ({ page }) => {
+test("[TC-E2E-04] new student can register and enter the booking portal", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Chưa có tài khoản? Đăng ký" }).click();
   await page.getByLabel("Họ và tên").fill("Người học mới");
@@ -49,14 +55,14 @@ test("new student can register and enter the booking portal", async ({ page }) =
   await expect(page.getByRole("heading", { name: "Chọn không gian, giữ nhịp tập trung" })).toBeVisible();
 });
 
-test("admin can switch to the student view", async ({ page }) => {
+test("[TC-E2E-05] admin can switch to the student view", async ({ page }) => {
   await login(page, "admin@studyspace.local");
   await page.getByRole("button", { name: "Góc nhìn sinh viên" }).click();
   await expect(page.getByText("STUDENT PORTAL")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Tìm phòng trống" })).toBeVisible();
 });
 
-test("student filters rooms by capacity and required equipment", async ({ page }) => {
+test("[TC-E2E-10] student filters rooms by capacity and required equipment", async ({ page }) => {
   await login(page, "student@studyspace.local");
   await page.getByLabel("Sức chứa tối thiểu").fill("15");
   await page.getByLabel("Thiết bị cần có").fill("Bảng trắng");
@@ -66,7 +72,7 @@ test("student filters rooms by capacity and required equipment", async ({ page }
   await expect(page.getByText("Chưa có phòng hoạt động.")).toBeVisible();
 });
 
-test("student can see the cancelled booking in history", async ({ page }) => {
+test("[TC-E2E-06] student can see the cancelled booking in history", async ({ page }) => {
   await login(page, "student@studyspace.local");
   await page.getByLabel("Ngày học").fill(tomorrow());
   await page.getByRole("button", { name: "11:00" }).first().click();
@@ -75,22 +81,36 @@ test("student can see the cancelled booking in history", async ({ page }) => {
   await expect(page.getByRole("complementary").getByText("CANCELLED").first()).toBeVisible();
 });
 
-test("admin can manage equipment from the operations console", async ({ page }) => {
+test("[TC-E2E-07] admin can manage equipment from the operations console", async ({ page }) => {
   await login(page, "admin@studyspace.local");
   await page.getByPlaceholder("Ví dụ: Máy chiếu").fill(`Loa-${Date.now()}`);
   await page.getByRole("button", { name: "Thêm", exact: true }).click();
   await expect(page.getByText("Đã thêm thiết bị.")).toBeVisible();
 });
 
-test("student can update their profile", async ({ page }) => {
+test("[TC-E2E-09] student can update their profile", async ({ page }) => {
   await login(page, "student@studyspace.local");
   await page.getByLabel("Họ và tên").fill("Nguyễn Minh Anh Updated");
   await page.getByRole("button", { name: "Lưu hồ sơ" }).click();
   await expect(page.getByRole("status")).toContainText("Đã cập nhật hồ sơ.");
 });
 
-test("landing login form has no serious accessibility violations", async ({ page }) => {
+test("[TC-E2E-08] landing login form has no serious accessibility violations", async ({ page }) => {
   await page.goto("/");
   const results = await new AxeBuilder({ page }).analyze();
-  expect(results.violations.filter((item) => ["critical", "serious"].includes(item.impact ?? "")).map((item) => item.id)).toEqual([]);
+  expectNoSeriousViolations(results);
+});
+
+test("[TC-E2E-11] student portal has no serious accessibility violations", async ({ page }) => {
+  await login(page, "student@studyspace.local");
+  await expect(page.getByText("STUDENT PORTAL")).toBeVisible();
+  const results = await new AxeBuilder({ page }).analyze();
+  expectNoSeriousViolations(results);
+});
+
+test("[TC-E2E-12] admin console has no serious accessibility violations", async ({ page }) => {
+  await login(page, "admin@studyspace.local");
+  await expect(page.getByText("ADMIN CONSOLE")).toBeVisible();
+  const results = await new AxeBuilder({ page }).analyze();
+  expectNoSeriousViolations(results);
 });

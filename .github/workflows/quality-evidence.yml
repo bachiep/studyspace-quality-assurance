@@ -1,0 +1,95 @@
+name: StudySpace quality evidence
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: file:./quality-evidence.db
+      JWT_SECRET: quality-evidence-only-secret
+      NODE_ENV: production
+      BASE_URL: http://127.0.0.1:4000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev --omit=optional --audit-level=high
+      - run: npm run db:generate
+      - run: npm run db:setup
+      - run: npm run qa:trace
+      - run: npm test
+      - run: npm run build
+
+      - name: Start production services
+        run: |
+          npm run start --workspace backend > /tmp/studyspace-api.log 2>&1 &
+          npm run preview --workspace frontend > /tmp/studyspace-web.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:4000/health >/dev/null && curl --fail --silent http://127.0.0.1:5173 >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/studyspace-api.log /tmp/studyspace-web.log
+          exit 1
+
+      - uses: grafana/setup-k6-action@v1
+      - name: k6 availability
+        run: |
+          mkdir -p reports/generated/k6
+          k6 run --summary-export reports/generated/k6/availability-summary.json --out json=reports/generated/k6/availability-raw.json tests/non-functional/performance/availability.js
+      - name: k6 concurrent booking
+        run: |
+          k6 run --summary-export reports/generated/k6/booking-race-summary.json --out json=reports/generated/k6/booking-race-raw.json tests/non-functional/performance/booking-race.js
+          node scripts/sanitize-k6-summary.mjs reports/generated/k6/booking-race-summary.json
+
+      - name: Lighthouse production report
+        run: |
+          mkdir -p reports/generated/lighthouse
+          npx lighthouse http://127.0.0.1:5173 --chrome-flags="--headless --no-sandbox" --only-categories=performance,accessibility,best-practices --output=json --output-path=reports/generated/lighthouse/report.json
+          npx lighthouse http://127.0.0.1:5173 --chrome-flags="--headless --no-sandbox" --only-categories=performance,accessibility,best-practices --output=html --output-path=reports/generated/lighthouse/report.html
+          node scripts/validate-lighthouse.mjs reports/generated/lighthouse/report.json
+
+      - name: ZAP passive baseline for frontend and public API
+        run: |
+          mkdir -p reports/generated/zap
+          run_zap() {
+            local name="$1" target="$2" code=0
+            docker run --rm --network host -v "$PWD/reports/generated/zap:/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t "$target" -I -J "$name.json" -r "$name.html" || code=$?
+            if [ "$code" -eq 1 ]; then exit 1; fi
+            if [ "$code" -gt 2 ]; then exit "$code"; fi
+          }
+          run_zap frontend http://127.0.0.1:5173
+          run_zap api http://127.0.0.1:4000/rooms
+
+      - name: Generate evidence manifest
+        if: always()
+        run: |
+          mkdir -p reports/generated/logs
+          cp /tmp/studyspace-api.log /tmp/studyspace-web.log reports/generated/logs/ 2>/dev/null || true
+          npm run qa:evidence-manifest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-quality-evidence-${{ github.sha }}
+          path: reports/generated
+          if-no-files-found: error
+          retention-days: 90
+      - name: Attach evidence bundle to tagged release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bundle="studyspace-quality-evidence-${GITHUB_SHA}.tar.gz"
+          tar -czf "$bundle" reports/generated
+          gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 || gh release create "${GITHUB_REF_NAME}" --generate-notes
+          gh release upload "${GITHUB_REF_NAME}" "$bundle" --clobber

@@ -4,8 +4,8 @@ export default defineConfig({
   testDir: "tests/e2e",
   timeout: 30_000,
   workers: 1,
-  reporter: [["list"], ["html", { outputFolder: "reports/generated/playwright", open: "never" }]],
-  use: { baseURL: "http://127.0.0.1:5173", trace: "retain-on-failure", screenshot: "only-on-failure" },
+  reporter: [["list"], ["html", { outputFolder: "reports/generated/playwright", open: "never" }], ["json", { outputFile: "reports/generated/playwright-results.json" }]],
+  use: { baseURL: "http://127.0.0.1:5173", trace: "retain-on-failure", screenshot: "only-on-failure", video: "retain-on-failure" },
   projects: [
     { name: "chromium-desktop", use: { ...devices["Desktop Chrome"] } },
     { name: "chromium-mobile", use: { ...devices["Pixel 5"] } }

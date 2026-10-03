@@ -194,7 +194,7 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 - **Tác nhân:** Admin.
 - **Tiền điều kiện:** JWT hợp lệ có vai trò `ADMIN`.
 - **Kích hoạt:** Admin mở dashboard báo cáo.
-- **Luồng chính:** (1) Nhận khoảng `from`/`to`; mặc định từ hôm nay đến 14 ngày tới, và từ không sau đến. (2) Lấy booking `BOOKED`, `CHECKED_IN`, `NO_SHOW` trong khoảng; bỏ `CANCELLED`. (3) Tính tổng booking, check-in, no-show. (4) Tính số slot có thể dùng theo từng phòng `ACTIVE` và từng ngày trong khoảng, trừ ngày closure; `occupancyRate = bookings / possibleSlots × 100`, làm tròn hai chữ số và chặn tối đa 100. (5) Gom/sắp phòng theo lượt booking giảm dần, trả range và `200`.
+- **Luồng chính:** (1) Nhận khoảng `from`/`to`; mặc định từ hôm nay đến 14 ngày tới, và từ không sau đến. (2) Lấy booking `BOOKED`, `CHECKED_IN`, `NO_SHOW` trong khoảng; bỏ `CANCELLED`. (3) Tính tổng booking, check-in, no-show. (4) Tính số slot có thể dùng theo từng phòng `ACTIVE` và từng ngày trong khoảng, trừ ngày closure; `reservationRate = bookings / possibleSlots × 100` và `utilizationRate = checkedIn / possibleSlots × 100`, làm tròn hai chữ số và chặn tối đa 100. (5) Trả `occupancyRate` như alias tương thích của `reservationRate`, gom/sắp phòng theo lượt đặt giảm dần, trả range và `200`.
 - **Luồng thay thế/ngoại lệ:** Token sai `401`; Student `403`; range sai hoặc ngày không tồn tại `422`; không có booking hợp lệ thì tổng bằng 0 và danh sách phòng rỗng.
 - **Hậu điều kiện:** Không thay đổi dữ liệu.
 

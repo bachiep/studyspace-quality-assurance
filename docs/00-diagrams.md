@@ -4,6 +4,8 @@
 
 ```mermaid
 flowchart LR
+  Guest((Guest)) --> Landing[Xem trang giới thiệu]
+  Guest --> Auth[Đăng ký / đăng nhập]
   Student((Student)) --> Auth[Đăng ký / đăng nhập]
   Student --> Find[Tìm phòng trống]
   Student --> Book[Đặt chỗ]
@@ -40,7 +42,7 @@ erDiagram
 
 ```mermaid
 flowchart TB
-  UI[React + Vite + Tailwind UI] -->|HTTPS / JSON| API[Express Controller + Zod + Helmet]
+  UI[React + Vite + Tailwind UI] -->|HTTP / JSON ở môi trường cục bộ| API[Express Controller + Zod + Helmet]
   API --> Domain[Domain services: booking policy]
   API --> Auth[JWT / bcrypt / RBAC]
   API --> Queue[SQLite booking write queue]
@@ -51,6 +53,8 @@ flowchart TB
   API --> Audit[Audit log]
   Audit --> DB
 ```
+
+> Phạm vi được kiểm thử trong repository chạy qua HTTP trên loopback. HTTPS chỉ là yêu cầu của môi trường triển khai thực tế và chưa được chứng minh bởi evidence hiện có.
 
 - Presentation: React screens cho Student và Admin.
 - Application/domain: Express route, validation, RBAC, hàng đợi write booking cho SQLite và các quy tắc slot/booking thuần.
