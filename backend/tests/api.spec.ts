@@ -214,7 +214,7 @@ describe.sequential("StudySpace API", () => {
 
   it("[TC-API-36] allows an owner to check in during the configured time window", async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-10-02T08:50:00"));
+    vi.setSystemTime(new Date("2026-10-02T08:50:00+07:00"));
     try {
       const created = await request(app).post("/bookings").set("authorization", `Bearer ${studentToken}`).send({ roomId, date: "2026-10-02", startTime: "09:00" }).expect(201);
       const response = await request(app).patch(`/bookings/${created.body.id}/check-in`).set("authorization", `Bearer ${studentToken}`);
