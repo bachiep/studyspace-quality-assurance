@@ -38,22 +38,10 @@ async function audit(client: Prisma.TransactionClient | typeof prisma, actorId: 
 export function createApp() {
   const app = express();
   app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        baseUri: ["'self'"],
-        formAction: ["'self'"],
-        frameAncestors: ["'self'"],
-        imgSrc: ["'self'", "data:"],
-        objectSrc: ["'none'"],
-        scriptSrc: ["'self'"],
-        scriptSrcAttr: ["'none'"],
-        styleSrc: ["'self'"],
-        upgradeInsecureRequests: null
-      }
-    }
+    contentSecurityPolicy: false
   }));
   app.use((_req, res, next) => {
+    res.setHeader("Content-Security-Policy", "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; img-src 'self' data:; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self'");
     res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
     next();
   });
