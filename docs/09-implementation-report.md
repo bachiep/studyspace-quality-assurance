@@ -39,7 +39,7 @@ API quản trị yêu cầu JWT có role `ADMIN`; token thiếu/hết hạn tr�
 | `frontend/src` | UI, API client, màn hình Student/Admin và component booking/profile/operations. |
 | `backend/src` | Express application, auth, database, domain policy và server entry point. |
 | `backend/prisma` | Schema Prisma, SQLite seed và migration workflow. |
-| `backend/tests` | Unit policy test và Supertest API contract test. |
+| `backend/tests` | Unit, property-based fast-check cho booking policy và Supertest API contract test. |
 | `tests/e2e` | Playwright Chromium E2E và accessibility axe. |
 | `tests/non-functional` | k6 availability và booking race scenario. |
 | `docs` | SRS, diagrams, plan, RTM, test catalog, bug report, ISO 25010 và summary. |
@@ -53,8 +53,10 @@ Yêu cầu Node.js LTS và npm. Trong thư mục gốc:
 Copy-Item backend/.env.example backend/.env
 npm install
 npm run db:generate
-Set-Location backend; npm run prisma:push; npm run prisma:seed
+npm run db:setup
 ```
+
+`db:setup` tạo file SQLite nếu chưa có, áp dụng migration versioned và seed dữ liệu demo. Với database demo cũ được tạo bằng `db push`, chạy `npm run db:reset` một lần; lệnh này xóa dữ liệu của database demo cục bộ trước khi seed lại.
 
 Chạy backend và frontend ở hai terminal bằng `npm run dev --workspace backend` và `npm run dev --workspace frontend`. Thông tin tài khoản seed và cổng dịch vụ có tại README gốc.
 

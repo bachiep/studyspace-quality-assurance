@@ -8,8 +8,12 @@ StudySpace là hệ thống quản lý phòng tự học do nhóm tự xây dự
 Copy-Item backend/.env.example backend/.env
 npm install
 npm run db:generate
-Set-Location backend; npm run prisma:push; npm run prisma:seed
+npm run db:setup
 ```
+
+`db:setup` áp các migration đã version hóa rồi mới seed dữ liệu demo; không dùng `prisma db push`, để môi trường cục bộ luôn theo đúng lịch sử migration.
+
+Nếu đã tạo `backend/prisma/dev.db` theo hướng dẫn cũ dùng `db push`, chạy `npm run db:reset` một lần trước khi chạy `db:setup`. Lệnh reset chỉ dành cho database demo cục bộ và sẽ xóa dữ liệu trong database đó.
 
 Mở hai terminal:
 

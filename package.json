@@ -11,9 +11,11 @@
     "test": "npm run test --workspace backend",
     "test:mutation": "cross-env DATABASE_URL=file:./test.db npm run prisma:migrate:reset --workspace backend && cross-env DATABASE_URL=file:./test.db stryker run",
     "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "db:setup": "npm run db:prepare-file --workspace backend && npm run prisma:migrate:deploy --workspace backend && npm run prisma:seed --workspace backend",
     "e2e": "npm run db:seed:e2e && playwright test",
     "db:generate": "npm run prisma:generate --workspace backend",
     "db:seed": "npm run prisma:seed --workspace backend",
+    "db:reset": "npm run prisma:migrate:reset --workspace backend && npm run prisma:seed --workspace backend",
     "db:seed:e2e": "cross-env DATABASE_URL=file:./test.db npm run prisma:migrate:reset --workspace backend && cross-env DATABASE_URL=file:./test.db npm run prisma:seed --workspace backend"
   },
   "devDependencies": {
