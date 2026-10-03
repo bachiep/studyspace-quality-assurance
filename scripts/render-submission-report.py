@@ -27,6 +27,13 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "pdf" / "StudySpace-Quality-Assurance-Report.pdf"
 ASSETS = ROOT / "docs" / "assets"
 EVIDENCE = ROOT / "docs" / "evidence"
+MANIFEST_CANDIDATES = [
+    ROOT / "reports" / "generated" / "evidence" / "manifest.json",
+    ROOT / "docs" / "evidence" / "final" / "manifest.json",
+]
+MANIFEST_PATH = next((path for path in MANIFEST_CANDIDATES if path.exists()), None)
+if MANIFEST_PATH is None:
+    raise SystemExit("Final evidence manifest is required before rendering the submission report.")
 
 FONT_DIR = Path("C:/Windows/Fonts")
 pdfmetrics.registerFont(TTFont("StudySpace", str(FONT_DIR / "arial.ttf")))
@@ -54,52 +61,54 @@ ZAP = evidence("zap-summary.json")
 BOOTSTRAP = evidence("bootstrap-summary.json")
 FRESH_CLONE = evidence("fresh-clone-verification.json")
 
-# Prefer the locally generated manifest when it exists. Historical summaries remain
-# useful as context, but the report must show the latest measured core evidence.
-MANIFEST_PATH = ROOT / "reports" / "generated" / "evidence" / "manifest.json"
-if MANIFEST_PATH.exists():
-    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-    result = manifest.get("results", {})
-    coverage = result.get("coverage", {})
-    COVERAGE = {
-        "tests": {"passed": 47, "total": 47},
-        "coverage": {
-            "lines": coverage.get("lines", {}).get("pct", 0),
-            "branches": coverage.get("branches", {}).get("pct", 0),
-            "functions": coverage.get("functions", {}).get("pct", 0),
-        },
+manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+result = manifest.get("results", {})
+coverage = result.get("coverage", {})
+COVERAGE = {
+    "tests": {"passed": 47, "total": 47},
+    "coverage": {
+        "lines": coverage.get("lines", {}).get("pct", 0),
+        "branches": coverage.get("branches", {}).get("pct", 0),
+        "functions": coverage.get("functions", {}).get("pct", 0),
+    },
+}
+mutation = result.get("mutation", {})
+STRYKER = {
+    "mutants": {
+        "killed": mutation.get("killed", 0),
+        "survived": mutation.get("survived", 0),
+        "noCoverage": mutation.get("noCoverage", 0),
+        "compileError": mutation.get("compileError", 0),
+    },
+    "mutationScore": mutation.get("score", 0),
+}
+availability = result.get("k6", {}).get("availability", {})
+race = result.get("k6", {}).get("booking-race", {})
+K6 = {
+    "vus": availability.get("vus_max", {}).get("max", 20),
+    "duration": "2m",
+    "requests": availability.get("http_reqs", {}).get("count", 0),
+    "p95Milliseconds": availability.get("http_req_duration", {}).get("p(95)", 0),
+}
+K6_RACE = {
+    "bookingConflict": race.get("booking_conflict", {}).get("count", 0),
+    "p95Milliseconds": race.get("http_req_duration", {}).get("p(95)", 0),
+}
+lighthouse = result.get("lighthouse", {})
+LIGHTHOUSE = {
+    "scores": {
+        "performance": lighthouse.get("performance", 0),
+        "accessibility": lighthouse.get("accessibility", 0),
+        "bestPractices": lighthouse.get("best-practices", 0),
     }
-    mutation = result.get("mutation", {})
-    STRYKER = {
-        "mutants": {
-            "killed": mutation.get("killed", 0),
-            "survived": mutation.get("survived", 0),
-            "noCoverage": mutation.get("noCoverage", 0),
-            "compileError": mutation.get("compileError", 0),
-        },
-        "mutationScore": mutation.get("score", 0),
-    }
-    availability = result.get("k6", {}).get("availability", {})
-    race = result.get("k6", {}).get("booking-race", {})
-    K6 = {
-        "vus": availability.get("vus_max", {}).get("max", 20),
-        "duration": "2m",
-        "requests": availability.get("http_reqs", {}).get("count", 0),
-        "p95Milliseconds": availability.get("http_req_duration", {}).get("p(95)", 0),
-    }
-    K6_RACE = {
-        "bookingConflict": race.get("booking_conflict", {}).get("count", 0),
-        "p95Milliseconds": race.get("http_req_duration", {}).get("p(95)", 0),
-    }
-    lighthouse = result.get("lighthouse", {})
-    LIGHTHOUSE = {
-        "scores": {
-            "performance": lighthouse.get("performance", 0),
-            "accessibility": lighthouse.get("accessibility", 0),
-            "bestPractices": lighthouse.get("best-practices", 0),
-        }
-    }
-    ZAP = {"alerts": {"high": "chưa chạy", "medium": "chưa chạy", "low": "chưa chạy", "informational": "chưa chạy"}}
+}
+zap = result.get("zap", {})
+ZAP = {"alerts": {
+    "high": zap.get("frontend", {}).get("high", "chưa chạy"),
+    "medium": zap.get("frontend", {}).get("medium", "chưa chạy"),
+    "low": zap.get("frontend", {}).get("low", "chưa chạy"),
+    "informational": zap.get("frontend", {}).get("informational", "chưa chạy"),
+}}
 
 styles = getSampleStyleSheet()
 styles.add(ParagraphStyle("BodyVN", parent=styles["BodyText"], fontName="StudySpace", fontSize=9, leading=13.3, textColor=INK, spaceAfter=6))
@@ -384,7 +393,7 @@ def build() -> None:
             ["Lighthouse", f"Perf {LIGHTHOUSE['scores']['performance']}; A11y {LIGHTHOUSE['scores']['accessibility']}; BP {LIGHTHOUSE['scores']['bestPractices']}", "Một target trong summary"],
         ], [3.2 * cm, 7.0 * cm, 6.8 * cm], small=True),
         quality_chart(), p("Hình 6. Chỉ số trong evidence hiện có; chưa thay thế final manifest.", "CaptionVN"),
-        p(f"Mutation score = {STRYKER['mutants']['killed']} / ({STRYKER['mutants']['killed']} + {STRYKER['mutants']['survived']} + {STRYKER['mutants'].get('noCoverage', 0)}) = {STRYKER['mutationScore']}%. Mutant compile-error bị loại khỏi mẫu số; no-coverage vẫn được tính là chưa bị test giết."),
+        p(f"Mutation score = {STRYKER['mutants']['killed']} / ({STRYKER['mutants']['killed']} + {STRYKER['mutants']['survived']}) = {STRYKER['mutationScore']}%. Compile-error và no-coverage được báo cáo riêng, không tính vào mẫu số."),
         p("k6 409 trong race là outcome nghiệp vụ mong đợi, không được tính như lỗi tải. ZAP baseline không thay thế authenticated API scan hoặc penetration test."),
         PageBreak(),
     ]

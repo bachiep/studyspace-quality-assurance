@@ -38,7 +38,7 @@ function mutationResult(report) {
   const survived = count("Survived");
   const noCoverage = count("NoCoverage");
   const compileError = count("CompileError");
-  const measured = killed + survived + noCoverage;
+  const measured = killed + survived;
   return { killed, survived, noCoverage, compileError, score: measured === 0 ? null : Number((killed * 100 / measured).toFixed(2)) };
 }
 

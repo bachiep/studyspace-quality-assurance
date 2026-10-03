@@ -6,7 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { z } from "zod";
 import { createToken, hashPassword, requireAdmin, requireAuth, verifyPassword } from "./auth.js";
-import { businessDateString, canCancel, canCheckIn, DomainError, endFor, validateBookingDate, validateNotPast, validateSlot } from "./domain/booking-policy.js";
+import { businessDateString, calendarDaysInclusive, canCancel, canCheckIn, DomainError, endFor, validateBookingDate, validateNotPast, validateSlot } from "./domain/booking-policy.js";
 import { prisma } from "./db.js";
 
 const asyncRoute = (handler: express.RequestHandler): express.RequestHandler => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
@@ -290,7 +290,7 @@ export function createApp() {
     const activeRooms = await prisma.room.findMany({ where: { status: RoomStatus.ACTIVE }, include: { closures: { where: { date: { gte: from, lte: to } } } } });
     const bookings = await prisma.booking.findMany({ where: { date: { gte: from, lte: to }, status: { in: [BookingStatus.BOOKED, BookingStatus.CHECKED_IN, BookingStatus.NO_SHOW] }, room: { status: RoomStatus.ACTIVE } }, include: { room: true } });
     const roomCounts = bookings.reduce<Record<string, { roomName: string; bookings: number }>>((acc, booking) => { acc[booking.roomId] ??= { roomName: booking.room.name, bookings: 0 }; acc[booking.roomId].bookings += 1; return acc; }, {});
-    const days = Math.floor((Date.parse(`${to}T00:00:00`) - Date.parse(`${from}T00:00:00`)) / 86_400_000) + 1;
+    const days = calendarDaysInclusive(from, to);
     const availableSlots = activeRooms.reduce((total, room) => total + (days - room.closures.length) * 14, 0);
     const checkedIn = bookings.filter((booking) => booking.status === BookingStatus.CHECKED_IN).length;
     const reservationRate = availableSlots ? Number(Math.min(100, bookings.length / availableSlots * 100).toFixed(2)) : 0;

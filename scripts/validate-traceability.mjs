@@ -28,6 +28,7 @@ function parseCsv(content) {
 
 const splitIds = (value, prefix) => [...value.matchAll(new RegExp(`${prefix}-[A-Z0-9]+-\\d{2}|${prefix}-\\d{3}`, "g"))].map(([id]) => id);
 const splitPaths = (value) => value.split(";").map((item) => item.trim()).filter((item) => item && item !== "—");
+const isExternalEvidence = (value) => value.startsWith("quality-evidence workflow artifact");
 const duplicates = (items) => [...new Set(items.filter((item, index) => items.indexOf(item) !== index))];
 const errors = [];
 const check = (condition, message) => { if (!condition) errors.push(message); };
@@ -56,7 +57,7 @@ for (const row of catalog) {
   }
   const source = row["Test source"];
   check(Boolean(source) && fs.existsSync(path.join(root, source)), `${testId} source does not exist: ${source || "<empty>"}.`);
-  for (const evidence of splitPaths(row.Evidence)) check(fs.existsSync(path.join(root, evidence)), `${testId} evidence path does not exist: ${evidence}.`);
+  for (const evidence of splitPaths(row.Evidence)) if (!isExternalEvidence(evidence)) check(fs.existsSync(path.join(root, evidence)), `${testId} evidence path does not exist: ${evidence}.`);
   for (const bugId of splitIds(row["Bug ID"], "BUG")) check(bugLog.has(bugId), `${testId} references undocumented ${bugId}.`);
 }
 
@@ -65,7 +66,7 @@ for (const row of rtm) {
   const testIds = splitIds(row["Test case IDs"], "TC");
   check(testIds.length > 0, `${requirementId} has no test cases in the RTM.`);
   for (const testId of testIds) check(catalogIds.includes(testId), `${requirementId} references unknown ${testId}.`);
-  for (const evidence of splitPaths(row.Evidence)) check(fs.existsSync(path.join(root, evidence)), `${requirementId} evidence path does not exist: ${evidence}.`);
+  for (const evidence of splitPaths(row.Evidence)) if (!isExternalEvidence(evidence)) check(fs.existsSync(path.join(root, evidence)), `${requirementId} evidence path does not exist: ${evidence}.`);
   for (const bugId of splitIds(row["Bug ID"], "BUG")) check(bugLog.has(bugId), `${requirementId} references undocumented ${bugId}.`);
 }
 

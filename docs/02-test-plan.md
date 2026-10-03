@@ -46,7 +46,7 @@ New → Triaged → In Progress → Ready for retest → Verified → Closed. M�
 
 - Vitest: 47/47 pass (11 domain/property-based và 36 API/configuration).
 - Tổng coverage backend: 98.27% line, 93.92% branch, 100% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
-- StrykerJS: 132 mutants gồm 88 killed, 16 survived, 2 no-coverage, 26 compile-error; mutation score 83.02% trên mutant không compile-error, đạt ngưỡng 60%.
+- StrykerJS: 132 mutants gồm 88 killed, 16 survived, 2 no-coverage, 26 compile-error; mutation score 84,62% = `killed / (killed + survived)`, không tính compile-error vào mẫu số, đạt ngưỡng 60%.
 - Playwright Chromium: 24/24 pass trên Desktop Chrome và Pixel 5, gồm 12 scenario student/admin; axe kiểm tra login, student portal và admin console.
 - Lighthouse production preview: Performance 100, Accessibility 100, Best Practices 96.
 - k6 availability: 20 VUs/2 phút, 2.390 requests, checks 100%, error rate 0%, p95 15.98 ms.

@@ -46,6 +46,10 @@ function calendarOrdinal({ year, month, day }: { year: number; month: number; da
   return Date.UTC(year, month - 1, day) / 86_400_000;
 }
 
+export function calendarDaysInclusive(from: string, to: string): number {
+  return calendarOrdinal(parseCalendarDate(to)) - calendarOrdinal(parseCalendarDate(from)) + 1;
+}
+
 function businessDateTime(date: string, startTime: string): number {
   const { year, month, day } = parseCalendarDate(date);
   const match = /^(\d{2}):(\d{2})$/.exec(startTime);

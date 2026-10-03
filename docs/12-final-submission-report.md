@@ -72,14 +72,14 @@ Entry criteria: migration/seed thành công, build được, test data và brows
 |---|---|---|
 | Unit + PBT + API | 47/47 pass | Chạy local sau đợt sửa correctness/a11y |
 | V8 coverage | Line 98,27%; branch 93,92%; function 100% | Chỉ source được instrument trong cấu hình |
-| Mutation | 88 killed; 16 survived; 2 no-coverage; 26 compile-error; 83,02% | Chỉ `booking-policy.ts`; compile-error loại khỏi mẫu số, no-coverage không loại |
+| Mutation | 88 killed; 16 survived; 2 no-coverage; 26 compile-error; 84,62% | Chỉ `booking-policy.ts`; dùng `killed / (killed + survived)`, compile-error và no-coverage báo cáo riêng |
 | E2E Chromium | 24/24 pass; 12 scenario trên desktop/mobile | Không đại diện Firefox/WebKit |
 | k6 availability | 20 VUs/2 phút; 2.390 request; checks 100%; error 0%; p95 15,98 ms | Một máy/môi trường và một workload |
 | k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 370,25 ms | SQLite single-instance; summary đã sanitize JWT |
 | ZAP baseline | Chưa chạy trên môi trường local hiện tại | Workflow release sẽ chạy frontend và public API; không phải pentest authenticated |
 | Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
 
-Các số liệu local trên được ghi nhận trong raw artifact hiện tại nhưng chưa phải kết quả nộp cuối vì manifest vẫn mang mã `local-uncommitted` và ZAP chưa chạy. Chỉ chuyển sang kết luận final sau khi quality-evidence workflow gắn final SHA, upload raw reports đã sanitize và có ZAP artifact. Mutation score hiện tại là `88 / (88 + 16 + 2) = 83,02%`; 26 compile-error bị loại khỏi mẫu số.
+Các số liệu local trên được ghi nhận trong raw artifact hiện tại nhưng chưa phải kết quả nộp cuối vì manifest vẫn mang mã `local-uncommitted` và ZAP chưa chạy. Chỉ chuyển sang kết luận final sau khi quality-evidence workflow gắn final SHA, upload raw reports đã sanitize và có ZAP artifact. Mutation score hiện tại là `88 / (88 + 16) = 84,62%`; no-coverage và 26 compile-error được báo cáo riêng.
 
 ## 7. Truy vết và quản lý defect
 
@@ -87,7 +87,7 @@ RTM ánh xạ 15 requirement sang kỹ thuật, test case, source và evidence. 
 
 Các defect đã ghi nhận gồm: thiếu bước xác nhận booking, CI database provisioning, thiếu database invariant cho active booking, SQLite contention, closure not-found contract, login brute-force protection và thiếu positive check-in coverage. Mỗi defect trong `docs/08-bug-reports.md` có bước tái hiện, expected/actual, severity, fix commit và retest. Issue #3/#5/#6/#8/#12 là task chất lượng/hardening và được phân loại riêng thay vì gắn nhãn defect SUT không chính xác.
 
-Tại thời điểm tạo bản nháp, issue #13 (date/time), #14 (audit/report semantics) và #15 (traceability/final evidence) đang mở. Vì vậy báo cáo không tuyên bố hoàn tất.
+Issue #13 (date/time) và #14 (audit/report semantics) đã có fix và retest. Issue #15 cùng các issue workflow/evidence #16–#20 vẫn cần artifact final gắn SHA trước khi báo cáo có thể chuyển khỏi trạng thái bản nháp.
 
 ## 8. Đánh giá ISO/IEC 25010:2023
 

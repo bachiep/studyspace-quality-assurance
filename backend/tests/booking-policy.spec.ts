@@ -1,6 +1,6 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { SLOT_STARTS, canCancel, canCheckIn, DomainError, endFor, validateBookingDate, validateNotPast, validateSlot } from "../src/domain/booking-policy.js";
+import { calendarDaysInclusive, SLOT_STARTS, canCancel, canCheckIn, DomainError, endFor, validateBookingDate, validateNotPast, validateSlot } from "../src/domain/booking-policy.js";
 
 describe("booking policy", () => {
   const now = new Date("2026-10-01T09:00:00+07:00");
@@ -11,6 +11,7 @@ describe("booking policy", () => {
     expect(() => validateBookingDate("2026-10-15", now)).not.toThrow();
     expect(() => validateBookingDate("2026-09-30", now)).toThrow("14 ngày");
     expect(() => validateBookingDate("2026-10-16", now)).toThrow("14 ngày");
+    expect(calendarDaysInclusive("2026-10-01", "2026-10-15")).toBe(15);
   });
   it("[TC-UNIT-06] rejects normalized and malformed calendar dates", () => {
     for (const invalidDate of ["2026-02-29", "2026-02-30", "2026-04-31", "2026-2-01"]) {

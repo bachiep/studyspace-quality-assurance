@@ -64,11 +64,11 @@ jobs:
           run_zap() {
             local name="$1" target="$2" code=0
             docker run --rm --network host -v "$PWD/reports/generated/zap:/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t "$target" -I -J "$name.json" -r "$name.html" || code=$?
-            if [ "$code" -eq 1 ]; then exit 1; fi
-            if [ "$code" -gt 2 ]; then exit "$code"; fi
+            if [ "$code" -gt 1 ]; then exit "$code"; fi
           }
           run_zap frontend http://127.0.0.1:5173
           run_zap api http://127.0.0.1:4000/rooms
+          node scripts/validate-zap.mjs reports/generated/zap/frontend.json reports/generated/zap/api.json
 
       - name: Generate evidence manifest
         if: always()

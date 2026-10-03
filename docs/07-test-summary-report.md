@@ -6,7 +6,7 @@
 |---|---:|---|
 | Unit + property-based + API (Vitest) | 47/47 pass (11 domain/property-based, 36 API/configuration) | `backend/tests`, CI quality run |
 | Coverage V8 | 98.27% line, 93.92% branch, 100% function | `backend/coverage/coverage-summary.json` |
-| Mutation testing | 88 killed / 16 survived / 2 no-coverage / 26 compile-error; score 83.02% | `reports/generated/stryker/mutation.json`, CI mutation step |
+| Mutation testing | 88 killed / 16 survived / 2 no-coverage / 26 compile-error; score 84,62% (`killed / (killed + survived)`) | `reports/generated/stryker/mutation.json`, CI mutation step |
 | E2E Chromium | 24/24 pass trên Desktop Chrome và Pixel 5; 12 scenario | `tests/e2e/studyspace.spec.ts`, Playwright artifact |
 | Axe login/student/admin | 0 vi phạm serious/critical trong ba trang | `tests/e2e/studyspace.spec.ts`, CI E2E step |
 | Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | `reports/generated/lighthouse/report.json` |
@@ -30,7 +30,7 @@
 
 ## Evidence đã đóng
 
-- Stryker mutation score local hiện đạt 83.02% (mục tiêu ≥60%).
+- Stryker mutation score local hiện đạt 84,62% theo công thức `killed / (killed + survived)` (mục tiêu ≥60%); no-coverage và compile-error được báo cáo riêng.
 - OWASP ZAP là mục bắt buộc của release workflow và vẫn đang chờ artifact final.
 
 Hai mục được ghi nhận từ report thực tế, không suy diễn từ các test khác.

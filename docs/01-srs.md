@@ -98,6 +98,16 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 - **Luồng thay thế/ngoại lệ:** Token không hợp lệ trả `401`; tên/email không hợp lệ trả `422`; email đã dùng trả `409`.
 - **Hậu điều kiện:** Nếu thành công, hồ sơ và audit log được cập nhật; vai trò và mật khẩu không đổi qua use case này.
 
+### UC-AUTH-04 — Phân quyền quản trị
+
+- **Yêu cầu liên kết:** REQ-AUTH-04, REQ-REPORT-01.
+- **Tác nhân:** Student hoặc Admin đã đăng nhập; Admin là tác nhân quản trị.
+- **Tiền điều kiện:** JWT hợp lệ; endpoint được gọi dưới `/admin/*` hoặc thao tác đổi vai trò có quyền Admin.
+- **Kích hoạt:** Người dùng gửi request tới chức năng quản trị hoặc Admin đổi vai trò của một người dùng khác.
+- **Luồng chính:** (1) Middleware xác thực JWT. (2) Middleware kiểm tra vai trò `ADMIN` trước khi chạy validation và truy cập dữ liệu quản trị. (3) Admin có thể đổi vai trò người dùng khác sang `STUDENT` hoặc `ADMIN`, ghi audit log. (4) Admin không thể tự hạ vai trò của chính mình.
+- **Luồng thay thế/ngoại lệ:** Thiếu hoặc sai JWT trả `401`; JWT hợp lệ nhưng là Student trả `403` với `ADMIN_ONLY`; role không hợp lệ trả `422`; người dùng không tồn tại trả `404`; Admin tự hạ quyền trả `422` với `SELF_ROLE_CHANGE_FORBIDDEN`.
+- **Hậu điều kiện:** Request quản trị hợp lệ thay đổi đúng dữ liệu và có audit log; request bị từ chối không làm thay đổi dữ liệu.
+
 ### UC-ROOM-01 — Tìm phòng và xem khả dụng
 
 - **Yêu cầu liên kết:** REQ-ROOM-01, REQ-ROOM-02.

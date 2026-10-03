@@ -145,12 +145,17 @@ Issue [#12](https://github.com/bachiep/studyspace-quality-assurance/issues/12) p
 | [#8](https://github.com/bachiep/studyspace-quality-assurance/issues/8) | Reliability hardening | Đưa mọi booking-state write qua cùng serialization boundary. |
 | [#12](https://github.com/bachiep/studyspace-quality-assurance/issues/12) | Reproducibility | Thay bootstrap `db push` bằng migration versioned. |
 
-## Các issue đang mở tại thời điểm lập báo cáo
+## Các issue chất lượng đang theo dõi
 
 | Issue | Rủi ro | Điều kiện đóng |
 |---|---|---|
-| [#13](https://github.com/bachiep/studyspace-quality-assurance/issues/13) | Domain có thể chấp nhận ngày lịch không tồn tại hoặc phụ thuộc timezone host. | Strict calendar validation, quy ước campus time và BVA/PBT pass. |
-| [#14](https://github.com/bachiep/studyspace-quality-assurance/issues/14) | Mutation và audit chưa nguyên tử; tên occupancy rate chưa chính xác. | Transaction rollback test và tách reservation/utilization rate. |
-| [#15](https://github.com/bachiep/studyspace-quality-assurance/issues/15) | Traceability và evidence cuối chưa kiểm tra máy/gắn final commit. | Trace gate, evidence workflow và final manifest pass. |
+| [#13](https://github.com/bachiep/studyspace-quality-assurance/issues/13) | Domain có thể chấp nhận ngày lịch không tồn tại hoặc phụ thuộc timezone host. | **Closed** — strict calendar validation, quy ước campus time và BVA/PBT pass. |
+| [#14](https://github.com/bachiep/studyspace-quality-assurance/issues/14) | Mutation và audit chưa nguyên tử; tên occupancy rate chưa chính xác. | **Closed** — transaction rollback test và tách reservation/utilization rate. |
+| [#15](https://github.com/bachiep/studyspace-quality-assurance/issues/15) | Traceability và evidence cuối chưa kiểm tra máy/gắn final commit. | **Open** — cần final manifest và artifact quality-evidence. |
+| [#16](https://github.com/bachiep/studyspace-quality-assurance/issues/16) | Evidence workflow bỏ devDependencies trước khi chạy test. | **Open** — workflow đã sửa, chờ retest thành công. |
+| [#17](https://github.com/bachiep/studyspace-quality-assurance/issues/17) | Production start trỏ sai đường dẫn backend sau build. | **Open** — script đã sửa, chờ retest quality-evidence. |
+| [#18](https://github.com/bachiep/studyspace-quality-assurance/issues/18) | Report day-count phụ thuộc timezone của host. | **Open** — đã chuyển sang calendar ordinal, chờ CI retest. |
+| [#19](https://github.com/bachiep/studyspace-quality-assurance/issues/19) | Evidence historical, UC-AUTH-04 và mutation metric chưa đồng bộ hồ sơ. | **Open** — đang đồng bộ tài liệu và validator. |
+| [#20](https://github.com/bachiep/studyspace-quality-assurance/issues/20) | ZAP gate chưa phân biệt High với cảnh báo thấp hơn. | **Open** — đã thêm validator chỉ fail khi có High/missing report. |
 
-Do ba issue trên chưa đóng tại thời điểm cập nhật tài liệu, báo cáo phải giữ trạng thái **BẢN NHÁP** và không được tuyên bố dự án hoàn tất.
+Cho tới khi các issue evidence/workflow còn mở có retest artifact gắn final SHA, báo cáo phải giữ trạng thái **BẢN NHÁP** và không được tuyên bố dự án hoàn tất.
