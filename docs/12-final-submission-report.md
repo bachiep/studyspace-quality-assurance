@@ -74,12 +74,12 @@ Entry criteria: migration/seed thành công, build được, test data và brows
 | V8 coverage | Line 98,29%; branch 93,95%; function 100% | Chỉ source được instrument trong cấu hình |
 | Mutation | 86 killed; 20 survived; 2 no-coverage; 27 compile-error; 81,13% | Chỉ `booking-policy.ts`; dùng `killed / (killed + survived)`, compile-error và no-coverage báo cáo riêng |
 | E2E Chromium | 24/24 pass; 12 scenario trên desktop/mobile | Không đại diện Firefox/WebKit |
-| k6 availability | 20 VUs/2 phút; 2.400 request; checks 100%; error 0%; p95 5,55 ms | Một máy/môi trường và một workload |
-| k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 65,15 ms | SQLite single-instance; summary đã sanitize JWT |
-| ZAP baseline | Frontend 0H/0M/9L/8I; API 0H/3M/3L/2I | Unauthenticated baseline; không phải pentest authenticated |
-| Lighthouse production preview | Performance 99; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
+| k6 availability | 20 VUs/2 phút; 2.400 request; checks 100%; error 0%; p95 6,97 ms | Một máy/môi trường và một workload |
+| k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 44,01 ms | SQLite single-instance; summary đã sanitize JWT |
+| ZAP baseline | Frontend 0H/0M/9L/6I; API 0H/3M/3L/3I | Unauthenticated baseline; không phải pentest authenticated |
+| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
 
-Các số liệu final trong bảng được lấy từ `docs/evidence/final/manifest.json`, với core run `37127607764` và quality-evidence run `37127614831`, đều gắn commit kiểm thử `512c073`. Mutation score là `86 / (86 + 20) = 81,13%`; no-coverage và 27 compile-error được báo cáo riêng. Raw artifact đầy đủ nằm trong artifact của GitHub Actions, không được chép vào repository.
+Các số liệu final trong bảng được lấy từ `docs/evidence/final/manifest.json`, với core run `37129142986` và quality-evidence run `37129362815`, đều gắn commit kiểm thử `88470c0`. Mutation score là `86 / (86 + 20) = 81,13%`; no-coverage và 27 compile-error được báo cáo riêng. Raw artifact đầy đủ nằm trong artifact của GitHub Actions, không được chép vào repository.
 
 ## 7. Truy vết và quản lý defect
 

@@ -9,10 +9,10 @@
 | Mutation testing | 86 killed / 20 survived / 2 no-coverage / 27 compile-error; score 81,13% (`killed / (killed + survived)`) | Core CI artifact gắn SHA `512c073` |
 | E2E Chromium | 24/24 pass trên Desktop Chrome và Pixel 5; 12 scenario | `tests/e2e/studyspace.spec.ts`, Playwright artifact |
 | Axe login/student/admin | 0 vi phạm serious/critical trong ba trang | `tests/e2e/studyspace.spec.ts`, CI E2E step |
-| Lighthouse production preview | Performance 99; Accessibility 100; Best Practices 96 | Quality evidence artifact gắn SHA `512c073` |
-| k6 availability | 20 VUs/2 phút; 2.400 requests; checks 100%; error 0%; p95 5.55 ms | Quality evidence artifact gắn SHA `512c073` |
-| k6 booking race | 20 VUs; 1 response 201, 19 response 409; checks 100%; error 0%; p95 65.15 ms | Quality evidence artifact gắn SHA `512c073` (JWT sanitized) |
-| OWASP ZAP baseline | Frontend 0H/0M/9L/8I; API 0H/3M/3L/2I | Quality evidence artifact gắn SHA `512c073`; unauthenticated baseline |
+| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Quality evidence artifact gắn SHA `88470c0` |
+| k6 availability | 20 VUs/2 phút; 2.400 requests; checks 100%; error 0%; p95 6.97 ms | Quality evidence artifact gắn SHA `88470c0` |
+| k6 booking race | 20 VUs; 1 response 201, 19 response 409; checks 100%; error 0%; p95 44.01 ms | Quality evidence artifact gắn SHA `88470c0` (JWT sanitized) |
+| OWASP ZAP baseline | Frontend 0H/0M/9L/6I; API 0H/3M/3L/3I | Quality evidence artifact gắn SHA `88470c0`; unauthenticated baseline |
 | Runtime dependency audit | 0 High/critical vulnerabilities (`--omit=dev --omit=optional`) | CI security step |
 | Fresh-clone bootstrap | Summary historical, không dùng để kết luận final | `docs/evidence/final/manifest.json` và core workflow |
 | Database migration isolation | Migrations áp thành công từ database test trắng trước unit/API và E2E | `docs/evidence/bootstrap-summary.json`, CI quality run |
@@ -24,7 +24,7 @@
 - Token hết hạn bị từ chối, Helmet phát security headers và CORS chỉ cấp cho origin frontend được cấu hình; bằng chứng API nằm trong `backend/tests/api.spec.ts`.
 - Login không thành công bị giới hạn theo client; ngưỡng/cửa sổ cấu hình qua môi trường và vượt ngưỡng trả `429` `AUTH_RATE_LIMITED`.
 - Phòng có lịch sử được chuyển `INACTIVE`, không xóa dữ liệu nghiệp vụ.
-- Axe và Lighthouse production preview đạt ngưỡng accessibility/best practices đã đặt; Performance đạt 99 trong lần chạy này.
+- Axe và Lighthouse production preview đạt ngưỡng accessibility/best practices đã đặt; Performance đạt 100 trong lần chạy này.
 - Luồng E2E chạy tuần tự qua desktop/mobile để cùng database test không tạo xung đột giả giữa các project.
 - ZAP final đã có artifact; High gate bằng 0. Các Medium/Low vẫn phải được phân tích, không được gọi là “không có finding”.
 
