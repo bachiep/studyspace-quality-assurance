@@ -1,11 +1,16 @@
 {
   "schemaVersion": 1,
   "status": "evidence-snapshot",
+  "verifiedAt": "2026-10-03T13:56:35Z",
   "source": {
     "testedCommit": "512c073189552e58c89bb398e6675f6eaecd58e8",
     "coreWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37127607764",
     "evidenceWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37127614831",
-    "repository": "https://github.com/bachiep/studyspace-quality-assurance"
+    "repository": "https://github.com/bachiep/studyspace-quality-assurance",
+    "coreWorkflowCreatedAt": "2026-10-03T13:51:26Z",
+    "coreWorkflowCompletedAt": "2026-10-03T13:56:06Z",
+    "evidenceWorkflowCreatedAt": "2026-10-03T13:51:34Z",
+    "evidenceWorkflowCompletedAt": "2026-10-03T13:56:35Z"
   },
   "environment": {
     "node": "v22.23.3",
