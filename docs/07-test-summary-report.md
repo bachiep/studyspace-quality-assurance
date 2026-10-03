@@ -5,14 +5,14 @@
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
 | Unit + property-based + API (Vitest) | 47/47 pass (11 domain/property-based, 36 API/configuration) | `backend/tests`, CI quality run |
-| Coverage V8 | 98.29% line, 93.95% branch, 100% function | Core CI artifact gắn SHA `512c073` |
+| Coverage V8 | 98.35% line, 94.02% branch, 100% function | Core CI run [37140913623](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37140913623) |
 | Mutation testing | 86 killed / 20 survived / 2 no-coverage / 27 compile-error; score 81,13% (`killed / (killed + survived)`) | Core CI artifact gắn SHA `512c073` |
 | E2E Chromium | 24/24 pass trên Desktop Chrome và Pixel 5; 12 scenario | `tests/e2e/studyspace.spec.ts`, Playwright artifact |
 | Axe login/student/admin | 0 vi phạm serious/critical trong ba trang | `tests/e2e/studyspace.spec.ts`, CI E2E step |
-| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Quality evidence artifact gắn SHA `88470c0` |
-| k6 availability | 20 VUs/2 phút; 2.400 requests; checks 100%; error 0%; p95 6.97 ms | Quality evidence artifact gắn SHA `88470c0` |
-| k6 booking race | 20 VUs; 1 response 201, 19 response 409; checks 100%; error 0%; p95 44.01 ms | Quality evidence artifact gắn SHA `88470c0` (JWT sanitized) |
-| OWASP ZAP baseline | Frontend 0H/0M/9L/6I; API 0H/3M/3L/3I | Quality evidence artifact gắn SHA `88470c0`; unauthenticated baseline |
+| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Quality evidence run [37140920740](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37140920740) |
+| k6 availability | 20 VUs/2 phút; 2.400 requests; checks 100%; error 0%; p95 4.63 ms | Quality evidence run [37140920740](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37140920740) |
+| k6 booking race | 20 VUs; 1 response 201, 19 response 409; checks 100%; error 0%; p95 41.19 ms | Quality evidence run [37140920740](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37140920740) (JWT sanitized) |
+| OWASP ZAP baseline | Frontend 0H/0M/9L/7I; API 0H/0M/0L/3I | Quality evidence run [37140920740](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37140920740); unauthenticated baseline |
 | Runtime dependency audit | 0 High/critical vulnerabilities (`--omit=dev --omit=optional`) | CI security step |
 | Fresh-clone bootstrap | Summary historical, không dùng để kết luận final | `docs/evidence/final/manifest.json` và core workflow |
 | Database migration isolation | Migrations áp thành công từ database test trắng trước unit/API và E2E | `docs/evidence/bootstrap-summary.json`, CI quality run |

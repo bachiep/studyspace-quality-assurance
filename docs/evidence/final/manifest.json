@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "status": "evidence-snapshot",
-  "verifiedAt": "2026-10-03T14:26:51Z",
+  "verifiedAt": "2026-10-03T17:37:40Z",
   "source": {
-    "testedCommit": "88470c0e3eb3f7274ca3d4ea66179edb7f7e1a21",
-    "coreWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37129142986",
-    "evidenceWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37129362815",
+    "testedCommit": "14cd9a346ae88dd9fc68e9a2fa74f30a06614777",
+    "coreWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37140913623",
+    "evidenceWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37140920740",
     "repository": "https://github.com/bachiep/studyspace-quality-assurance",
-    "coreWorkflowCreatedAt": "2026-10-03T14:18:33Z",
-    "coreWorkflowCompletedAt": "2026-10-03T14:22:58Z",
-    "evidenceWorkflowCreatedAt": "2026-10-03T14:22:24Z",
-    "evidenceWorkflowCompletedAt": "2026-10-03T14:26:51Z"
+    "coreWorkflowCreatedAt": "2026-10-03T17:32:56Z",
+    "coreWorkflowCompletedAt": "2026-10-03T17:37:28Z",
+    "evidenceWorkflowCreatedAt": "2026-10-03T17:33:03Z",
+    "evidenceWorkflowCompletedAt": "2026-10-03T17:37:40Z"
   },
   "environment": {
     "node": "v22.23.3",
@@ -23,7 +23,7 @@
   "results": {
     "traceability": { "requirements": 15, "testCases": 61, "defects": 7, "passed": true },
     "automatedTests": { "passed": 47, "total": 47 },
-    "coverage": { "lines": 98.29, "branches": 93.95, "functions": 100, "statements": 98.29 },
+    "coverage": { "lines": 98.35, "branches": 94.02, "functions": 100, "statements": 98.35 },
     "mutation": {
       "killed": 86,
       "survived": 20,
@@ -37,7 +37,7 @@
     "k6": {
       "availability": {
         "requests": 2400,
-        "p95Ms": 6.97,
+        "p95Ms": 4.63,
         "checksRate": 1,
         "requestFailureRate": 0,
         "passed": true
@@ -48,27 +48,27 @@
         "conflict409": 19,
         "checksRate": 1,
         "expectedOutcomeRate": 1,
-        "p95Ms": 44.01,
+        "p95Ms": 41.19,
         "passed": true
       }
     },
     "lighthouse": { "performance": 100, "accessibility": 100, "bestPractices": 96 },
     "zapBaseline": {
       "scope": "unauthenticated frontend preview and public API baseline",
-      "frontend": { "high": 0, "medium": 0, "low": 9, "informational": 6 },
-      "api": { "high": 0, "medium": 3, "low": 3, "informational": 3 },
+      "frontend": { "high": 0, "medium": 0, "low": 9, "informational": 7 },
+      "api": { "high": 0, "medium": 0, "low": 0, "informational": 3 },
       "passedHighAlertGate": true
     }
   },
   "artifacts": [
-    { "workflow": "core", "path": "backend/coverage/coverage-summary.json", "sha256": "de07809e0a79a5d36cf4aa44487ca7a9d58c7eaf53331670b3ffcc43613211a3" },
-    { "workflow": "core", "path": "reports/generated/stryker/mutation.json", "sha256": "29c3c276dde949f81437a6e2d5f24e5c5f91a2030bb960ebd0c17013e5ef60ac" },
-    { "workflow": "core", "path": "reports/generated/playwright-results.json", "sha256": "172c10a4dd4f9eb526b528e25eaf27af7178b78f41c74f83cc6758be7ad59bca" },
-    { "workflow": "evidence", "path": "reports/generated/k6/availability-summary.json", "sha256": "cb3ba800166113edfba7570e9b9fb2c725ca94f6379df004bc1fee4cedbf6eb1" },
-    { "workflow": "evidence", "path": "reports/generated/k6/booking-race-summary.json", "sha256": "5f482de32773c21425a2cedaecf1adab1177eba01d642c66ac2e6d4ac23d9079" },
-    { "workflow": "evidence", "path": "reports/generated/lighthouse/report.json", "sha256": "bb9dbd661637d0db6ecf9fa9f662c7f2c1e73b6bf4a9d33d1be1d94d1905e1d0" },
-    { "workflow": "evidence", "path": "reports/generated/zap/frontend.json", "sha256": "d91d7f213f841f77170e536181172885023bae60fed7c57e43404022e0b20a21" },
-    { "workflow": "evidence", "path": "reports/generated/zap/api.json", "sha256": "275c30968a88389b24e9c8e112f3cdc20bfe5920834aefa3809d63c0e72e38ca" }
+    { "workflow": "core", "path": "backend/coverage/coverage-summary.json", "sha256": "c28d242bd940de9c86146808c5e28aabc1ee73fc82366cc1683b4b8b576ba872" },
+    { "workflow": "core", "path": "reports/generated/stryker/mutation.json", "sha256": "c47ce22d5ed37896b65b000eb5274692f47935d3a9ccee8792f9e58f715c650d" },
+    { "workflow": "core", "path": "reports/generated/playwright-results.json", "sha256": "b30391321d22a00d08beef297fdbe38202e9667f8e3b0dc097897597a401a0ef" },
+    { "workflow": "evidence", "path": "reports/generated/k6/availability-summary.json", "sha256": "f1216fc9a4218c529585a92b8d0297161ef30c88e1b0195a1c3ad21ffad842cd" },
+    { "workflow": "evidence", "path": "reports/generated/k6/booking-race-summary.json", "sha256": "87eff69a83a1c1718bb39e90f7973823398055a1a06cfb8dddbe117e2797c496" },
+    { "workflow": "evidence", "path": "reports/generated/lighthouse/report.json", "sha256": "065766fabdcfccefa71da33567b8f1b6e7e6fa361f6d438b38888474e267cfb8" },
+    { "workflow": "evidence", "path": "reports/generated/zap/frontend.json", "sha256": "a2a01d98e43810040cbf5624e4ce11dc5959746993da55234208bfe75c34a615" },
+    { "workflow": "evidence", "path": "reports/generated/zap/api.json", "sha256": "e11a1f891556c1daf122366f3beb0df165dae71a97e25e06292e26537a80682d" }
   ],
   "thresholds": {
     "coverage": { "lines": 85, "branches": 70, "functions": 85 },

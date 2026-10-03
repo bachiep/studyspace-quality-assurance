@@ -14,15 +14,15 @@ Checklist này ghi nhận phạm vi đã kiểm tra của StudySpace. “Đạt�
 | Error contract | Prisma duplicate/not-found và domain errors được chuẩn hóa, không trả stack trace cho client. | `TC-API-04`, `TC-API-34`, ZAP baseline | Đạt trong phạm vi test |
 | Secrets | `.env` và database cục bộ bị loại khỏi Git; `.env.example` không có secret thật. | `.gitignore`, `backend/.env.example` | Đạt |
 | Dependency risk | Audit runtime dependency không có High/Critical. | CI security step | Đạt |
-| Dynamic scan | ZAP baseline JSON frontend/API gắn với commit và workflow; High alert phải bằng 0. | `quality-evidence.yml`, `docs/evidence/final/manifest.json`, run 37127614831 | Đạt gate High = 0; frontend 0M, API 3M cần phân tích |
+| Dynamic scan | ZAP baseline JSON frontend/API gắn với commit và workflow; High alert phải bằng 0. | `quality-evidence.yml`, `docs/evidence/final/manifest.json`, run 37140920740 | Đạt gate High = 0; frontend 0M, API 0M |
 
 ## Phân tích finding ZAP final
 
 | Phạm vi | Finding | Mức/đếm | Xử lý và giới hạn |
 |---|---|---:|---|
 | Frontend | COEP/COOP/CORP header missing hoặc invalid | Low / 9 | Ghi nhận để harden header khi triển khai; không chặn quality gate hiện tại vì ứng dụng local không dùng cross-origin isolation. |
-| API | CSP directive thiếu fallback | Medium / 1 nhóm (3 alert theo instance) | Giữ trong backlog hardening; API JSON không phục vụ nội dung trình duyệt, nhưng CSP cần cấu hình rõ nếu API được đặt sau cùng origin với frontend. |
-| API | Permissions-Policy header chưa đặt | Low / 3 | Bổ sung ở reverse proxy/deployment profile; không chứng minh được bằng baseline local hiện tại. |
+| API | CSP directive thiếu fallback | Medium / 3 instances | Đã sửa bằng CSP tường minh trên response thành công và fallback 404; ZAP retest run 37140920740 còn 0 Medium. |
+| API | Permissions-Policy header chưa đặt | Low / 3 | Đã đặt header ở API middleware; ZAP retest run 37140920740 còn 0 Low. |
 | Frontend/API | Nội dung storable/cacheable và insight log | Low/Informational | Không phải lỗi xác thực; kiểm tra cache-control và log vận hành khi triển khai production. |
 
 Các finding Medium/Low không bị che giấu. ZAP baseline này unauthenticated và public-scope, nên không thay thế authenticated scan, manual review hoặc penetration test.
