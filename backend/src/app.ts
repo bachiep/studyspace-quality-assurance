@@ -37,7 +37,26 @@ async function audit(client: Prisma.TransactionClient | typeof prisma, actorId: 
 
 export function createApp() {
   const app = express();
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'self'"],
+        imgSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        scriptSrc: ["'self'"],
+        scriptSrcAttr: ["'none'"],
+        styleSrc: ["'self'"],
+        upgradeInsecureRequests: null
+      }
+    }
+  }));
+  app.use((_req, res, next) => {
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    next();
+  });
   const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://127.0.0.1:5173").split(",").map((origin) => origin.trim()).filter(Boolean);
   const loginLimiter = rateLimit({
     windowMs: positiveIntegerSetting(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000, 86_400_000),

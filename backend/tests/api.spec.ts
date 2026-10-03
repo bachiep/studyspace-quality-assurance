@@ -357,5 +357,8 @@ describe.sequential("StudySpace API", () => {
     const health = await request(app).get("/health");
     expect(health.headers["x-content-type-options"]).toBe("nosniff");
     expect(health.headers["x-frame-options"]).toBe("SAMEORIGIN");
+    expect(health.headers["content-security-policy"]).toContain("default-src 'self'");
+    expect(health.headers["content-security-policy"]).toContain("frame-ancestors 'self'");
+    expect(health.headers["permissions-policy"]).toBe("camera=(), microphone=(), geolocation=()");
   });
 });
