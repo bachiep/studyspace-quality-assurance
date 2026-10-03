@@ -4,18 +4,18 @@
 
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
-| Unit + API (Vitest) | 40/40 pass (5 unit, 35 API/configuration) | `backend/tests`, `docs/evidence/coverage-summary.json`; CI run [36953349825](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36953349825) |
-| Coverage V8 | 97.23% line, 91.09% branch, 94.11% function | `docs/evidence/coverage-summary.json` |
-| Mutation testing | 52 killed / 11 survived / 5 compile-error mutants; score 82.54% | `reports/generated/stryker/mutation.json` |
-| E2E Chromium | 20/20 pass trên Desktop Chrome và Pixel 5 | `reports/generated/playwright` |
-| Axe login | 0 vi phạm serious/critical | Playwright report |
+| Unit + property-based + API (Vitest) | 43/43 pass (5 unit, 3 property-based, 35 API/configuration) | `backend/tests`, `docs/evidence/coverage-summary.json`, CI quality run |
+| Coverage V8 | 97.23% line, 91.21% branch, 94.11% function | `docs/evidence/coverage-summary.json` |
+| Mutation testing | 57 killed / 6 survived / 5 compile-error mutants; score 90.48% | `docs/evidence/stryker-summary.json`, CI mutation step |
+| E2E Chromium | 20/20 pass trên Desktop Chrome và Pixel 5 | `tests/e2e/studyspace.spec.ts`, `docs/assets/student-dashboard.png`, `docs/assets/admin-dashboard.png`, CI E2E step |
+| Axe login | 0 vi phạm serious/critical | `tests/e2e/studyspace.spec.ts`, CI E2E step |
 | Lighthouse production (full categories) | Performance 100; Accessibility 100; Best Practices 96; SEO 82 | `docs/evidence/lighthouse-production-summary.json` |
-| k6 availability | 20 VUs/2 phút; 2,382 requests; 19.69 req/s; error 0%; p95 17.47 ms; exit 0 | `reports/generated/k6-final-summary.json` |
+| k6 availability | 20 VUs/2 phút; 2,382 requests; 19.69 req/s; error 0%; p95 17.47 ms; exit 0 | `docs/evidence/k6-summary.json` |
 | k6 booking race | 20 VUs; 1 response 201, 19 response 409; error 0%; p95 292.09 ms; exit 0 | `docs/evidence/k6-booking-race-summary.json` |
-| OWASP ZAP production baseline | 0 High, 0 Medium, 0 Low, 2 Informational | `reports/generated/zap/baseline-production.html` |
+| OWASP ZAP production baseline | 0 High, 0 Medium, 0 Low, 2 Informational | `docs/evidence/zap-summary.json`, CI security step |
 | Runtime dependency audit | 0 High/critical vulnerabilities (`--omit=dev --omit=optional`) | CI security step |
 | Fresh-clone bootstrap | `npm ci`, Prisma generate và production build pass từ clone sạch tại `8a516df` | `docs/evidence/fresh-clone-verification.json` |
-| Database migration isolation | Migrations áp thành công từ database test trắng trước unit/API và E2E | Console test, CI quality run |
+| Database migration isolation | Migrations áp thành công từ database test trắng trước unit/API và E2E | `docs/evidence/bootstrap-summary.json`, CI quality run |
 
 ## Quyết định chất lượng
 
@@ -30,7 +30,7 @@
 
 ## Evidence đã đóng
 
-- Stryker mutation score đã đạt 82.54% (mục tiêu ≥60%).
+- Stryker mutation score đã đạt 90.48% (mục tiêu ≥60%).
 - OWASP ZAP production baseline đã chạy, không có High/Medium/Low.
 
 Hai mục được ghi nhận từ report thực tế, không suy diễn từ các test khác.

@@ -13,5 +13,6 @@
 | [Báo cáo cài đặt](09-implementation-report.md) | Kiến trúc, data model, API, cấu trúc mã và tái lập môi trường |
 | [Tài liệu tham khảo](10-references.md) | Chuẩn và tài liệu công cụ chính thức phục vụ kiểm định |
 | [Security checklist](11-security-checklist.md) | Phạm vi, evidence và giới hạn kiểm định an toàn |
+| [Báo cáo nộp tổng hợp](12-final-submission-report.md) | Nguồn Markdown cho báo cáo PDF chính thức |
 
 Mã định danh: `REQ-{AUTH|ROOM|BOOK|REPORT}-NN`, `TC-{UNIT|API|E2E|NF}-NN`, `BUG-NN`.
