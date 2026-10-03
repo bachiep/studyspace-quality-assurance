@@ -6,7 +6,7 @@
 |---|---:|---|
 | Unit + property-based + API (Vitest) | 47/47 pass (11 domain/property-based, 36 API/configuration) | `backend/tests`, CI quality run |
 | Coverage V8 | 98.35% line, 94.02% branch, 100% function | Core CI run [37140913623](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37140913623) |
-| Mutation testing | 86 killed / 20 survived / 2 no-coverage / 27 compile-error; score 81,13% (`killed / (killed + survived)`) | Core CI artifact gắn SHA `512c073` |
+| Mutation testing | 86 killed / 20 survived / 2 no-coverage / 27 compile-error; score 81,13% (`killed / (killed + survived)`) | Core CI artifact gắn commit kiểm thử `14cd9a3` |
 | E2E Chromium | 24/24 pass trên Desktop Chrome và Pixel 5; 12 scenario | `tests/e2e/studyspace.spec.ts`, Playwright artifact |
 | Axe login/student/admin | 0 vi phạm serious/critical trong ba trang | `tests/e2e/studyspace.spec.ts`, CI E2E step |
 | Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Quality evidence run [37140920740](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37140920740) |

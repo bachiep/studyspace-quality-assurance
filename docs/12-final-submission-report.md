@@ -8,7 +8,7 @@
 
 StudySpace là **Software Under Test (SUT)**: hệ thống quản lý phòng học và đặt chỗ. Mục tiêu bài tập không phải xây một công cụ kiểm thử độc lập, mà là xác định yêu cầu chất lượng, thiết kế và thực thi kiểm thử nhiều tầng, quản lý defect, rồi đánh giá chất lượng SUT bằng bằng chứng tái lập được. Bộ Vitest, Supertest, fast-check, Playwright, StrykerJS, k6, OWASP ZAP và Lighthouse là phương tiện kiểm định đi kèm SUT.
 
-Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw result -> Defect/Fix -> Retest`. Một kết luận không có evidence được ghi là **chưa đánh giá**. Bản hiện tại vẫn là bản nháp vì thông tin bìa chưa được cung cấp; evidence snapshot đã gắn với commit kiểm thử `512c073` và hai workflow cuối.
+Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw result -> Defect/Fix -> Retest`. Một kết luận không có evidence được ghi là **chưa đánh giá**. Bản hiện tại vẫn là bản nháp vì thông tin bìa chưa được cung cấp; evidence snapshot đã gắn với commit kiểm thử `14cd9a3` và hai workflow cuối.
 
 ## 1. Phân công và kế hoạch
 
@@ -47,7 +47,7 @@ Sơ đồ use case, ERD và component được duy trì ở `docs/00-diagrams.md
 - Bootstrap database mới: `npm run db:setup`, chỉ dùng migration versioned rồi seed.
 - Reset demo/test database: `npm run db:reset`; đây là thao tác phá hủy dữ liệu và phải dùng trên database được chọn rõ.
 - Unit/API dùng isolated SQLite database; E2E seed dữ liệu riêng trước khi chạy.
-- `docs/evidence/bootstrap-summary.json` ghi nhận migration trên database tạm. Fresh-clone summary cũ không được dùng làm bằng chứng final; manifest final trỏ tới core/evidence workflow gắn `512c073`.
+- `docs/evidence/bootstrap-summary.json` ghi nhận migration trên database tạm. Fresh-clone summary cũ không được dùng làm bằng chứng final; manifest final trỏ tới core/evidence workflow gắn `14cd9a3`.
 
 ## 5. Test Plan và kỹ thuật thiết kế
 
@@ -71,7 +71,7 @@ Entry criteria: migration/seed thành công, build được, test data và brows
 | Hoạt động | Kết quả trong summary hiện có | Giới hạn |
 |---|---|---|
 | Unit + PBT + API | 47/47 pass | Chạy local sau đợt sửa correctness/a11y |
-| V8 coverage | Line 98,29%; branch 93,95%; function 100% | Chỉ source được instrument trong cấu hình |
+| V8 coverage | Line 98,35%; branch 94,02%; function 100% | Chỉ source được instrument trong cấu hình |
 | Mutation | 86 killed; 20 survived; 2 no-coverage; 27 compile-error; 81,13% | Chỉ `booking-policy.ts`; dùng `killed / (killed + survived)`, compile-error và no-coverage báo cáo riêng |
 | E2E Chromium | 24/24 pass; 12 scenario trên desktop/mobile | Không đại diện Firefox/WebKit |
 | k6 availability | 20 VUs/2 phút; 2.400 request; checks 100%; error 0%; p95 4,63 ms | Một máy/môi trường và một workload |
@@ -87,7 +87,7 @@ RTM ánh xạ 15 requirement sang kỹ thuật, test case, source và evidence. 
 
 Các defect đã ghi nhận gồm: thiếu bước xác nhận booking, CI database provisioning, thiếu database invariant cho active booking, SQLite contention, closure not-found contract, login brute-force protection và thiếu positive check-in coverage. Mỗi defect trong `docs/08-bug-reports.md` có bước tái hiện, expected/actual, severity, fix commit và retest. Issue #3/#5/#6/#8/#12 là task chất lượng/hardening và được phân loại riêng thay vì gắn nhãn defect SUT không chính xác.
 
-Issue #13 (date/time) và #14 (audit/report semantics) đã có fix và retest. Các issue workflow/evidence #16–#20 đã có retest trong hai workflow cuối; issue #15 chỉ được đóng sau khi manifest snapshot, RTM và report được đối chiếu lần cuối.
+Issue #13 (date/time), #14 (audit/report semantics) và #15–#20 (traceability/evidence workflow) đã được đóng sau khi có fix và retest. Các vấn đề hardening #21–#22 cũng đã có workflow xác nhận.
 
 ## 8. Đánh giá ISO/IEC 25010:2023
 
@@ -107,7 +107,7 @@ Báo cáo sử dụng chín đặc tính của phiên bản 2023: Functional sui
 
 ## 9. Giới hạn và kết luận
 
-StudySpace có phạm vi SUT phù hợp với học phần và có nền tảng kiểm thử đa tầng. Bản báo cáo vẫn giữ nhãn **BẢN NHÁP** cho tới khi placeholder bìa được thay bằng dữ liệu thật và issue #15 được đóng với bằng chứng retest. Core và quality-evidence workflow hiện đã xanh; manifest ghi SHA, run, phiên bản công cụ và hash artifact.
+StudySpace có phạm vi SUT phù hợp với học phần và có nền tảng kiểm thử đa tầng. Bản báo cáo vẫn giữ nhãn **BẢN NHÁP** cho tới khi placeholder bìa được thay bằng dữ liệu thật. Core và quality-evidence workflow hiện đã xanh; manifest ghi SHA, run, phiên bản công cụ và hash artifact.
 
 Kết luận hiện tại: **có bằng chứng tích cực cho các phạm vi đã chạy, nhưng chưa đủ điều kiện tuyên bố hoàn thiện 100% hoặc đạt toàn diện**.
 
