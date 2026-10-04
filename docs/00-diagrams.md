@@ -2,6 +2,8 @@
 
 ## Use Case Diagram
 
+Nguồn PlantUML dùng cho hình use case rút gọn trong báo cáo Word nằm tại [`diagrams/report-use-case.puml`](diagrams/report-use-case.puml). Hình trong báo cáo chỉ nhóm các chức năng theo actor; sơ đồ Mermaid dưới đây giữ mức chi tiết của từng use case.
+
 ```mermaid
 flowchart LR
   Guest((Guest)) --> Landing[Xem trang giới thiệu]

@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultFontName "Times New Roman"
+skinparam usecase {
+  BackgroundColor white
+  BorderColor #1F4E79
+}
+skinparam actor {
+  BorderColor #4B5563
+}
+
+actor Guest
+actor Student
+actor Admin
+
+rectangle "StudySpace" {
+  usecase "Đăng ký và\nđăng nhập" as AUTH
+  usecase "Hồ sơ; tìm phòng; đặt chỗ;\nhủy, check-in và lịch sử" as STUDENT
+  usecase "Người dùng; phòng; thiết bị; lịch đóng;\nbooking và báo cáo sử dụng" as ADMIN
+}
+
+Guest --> AUTH
+Student --> STUDENT
+Admin --> ADMIN
+@enduml
