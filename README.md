@@ -11,9 +11,9 @@ npm run db:generate
 npm run db:setup
 ```
 
-`db:setup` áp các migration đã version hóa rồi mới seed dữ liệu demo; không dùng `prisma db push`, để môi trường cục bộ luôn theo đúng lịch sử migration.
+`db:setup` áp các migration đã version hóa rồi mới seed dữ liệu demo, để môi trường cục bộ luôn theo đúng lịch sử migration.
 
-Nếu đã tạo `backend/prisma/dev.db` theo hướng dẫn cũ dùng `db push`, chạy `npm run db:reset` một lần trước khi chạy `db:setup`. Lệnh reset chỉ dành cho database demo cục bộ và sẽ xóa dữ liệu trong database đó.
+Nếu đã có database demo theo schema cũ, chạy `npm run db:reset` một lần trước khi chạy `db:setup`. Lệnh reset chỉ dành cho database demo cục bộ và sẽ xóa dữ liệu trong database đó.
 
 Mở hai terminal:
 

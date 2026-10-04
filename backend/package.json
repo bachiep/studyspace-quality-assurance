@@ -11,7 +11,6 @@
     "test:watch": "vitest",
     "prisma:generate": "prisma generate",
     "db:prepare-file": "node scripts/ensure-sqlite-file.mjs",
-    "prisma:push": "prisma db push",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:migrate:reset": "prisma migrate reset --force --skip-seed --skip-generate",
     "prisma:seed": "tsx prisma/seed.ts"
