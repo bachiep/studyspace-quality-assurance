@@ -18,6 +18,15 @@ Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw
 
 Kế hoạch thực hiện gồm: đặc tả SRS; thiết kế kiến trúc và dữ liệu; hiện thực bốn phân hệ; thiết kế test theo rủi ro; thực thi kiểm thử chức năng/phi chức năng; ghi nhận và sửa defect; kiểm thử hồi quy; tổng hợp evidence và đánh giá ISO/IEC 25010:2023.
 
+Các mốc kỹ thuật được đối chiếu từ lịch sử repository; chúng không thay thế phân công thành viên.
+
+| Thời điểm | Mốc kỹ thuật | Kết quả được kiểm tra |
+|---|---|---|
+| 01-10-2026 | Khởi tạo StudySpace và baseline kiểm thử | SUT bốn phân hệ, API/E2E cơ sở và CI ban đầu |
+| 02-10-2026 | Củng cố booking integrity và API contract | Active key, race handling, closure not-found, rate limit và test hồi quy |
+| 03-10-2026 | Tái lập môi trường và evidence | Migration versioned, PBT, traceability, k6, ZAP và Lighthouse workflow |
+| 04-10-2026 | Security retest và chuẩn hóa báo cáo | Security header retest, manifest final, báo cáo Word và kiểm tra render |
+
 ## 2. Phạm vi và yêu cầu SUT
 
 Hệ thống có hai vai trò nghiệp vụ. `STUDENT` quản lý hồ sơ, tìm phòng theo ngày/sức chứa/thiết bị, đặt/hủy/check-in và xem lịch sử. `ADMIN` quản lý người dùng, phòng, thiết bị, lịch đóng, trạng thái booking và báo cáo. `Guest` xem trang giới thiệu và đăng ký/đăng nhập.
