@@ -10,15 +10,15 @@ permissions:
 
 jobs:
   evidence:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       DATABASE_URL: file:./quality-evidence.db
       JWT_SECRET: quality-evidence-only-secret
       BASE_URL: http://127.0.0.1:4000
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -85,7 +85,7 @@ jobs:
           mkdir -p reports/generated/logs
           cp /tmp/studyspace-api.log /tmp/studyspace-web.log reports/generated/logs/ 2>/dev/null || true
           npm run qa:evidence-manifest
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: full-quality-evidence-${{ github.sha }}
