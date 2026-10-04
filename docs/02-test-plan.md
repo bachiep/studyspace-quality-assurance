@@ -48,8 +48,8 @@ New → Triaged → In Progress → Ready for retest → Verified → Closed. M�
 - Tổng coverage backend: 98.35% line, 94.02% branch, 100% function. Ngưỡng CI được cấu hình: line/statements/functions ≥85%, branch ≥70%.
 - StrykerJS artifact của core workflow: 135 mutants gồm 86 killed, 20 survived, 2 no-coverage, 27 compile-error; mutation score 81,13% = `killed / (killed + survived)`, không tính compile-error/no-coverage vào mẫu số, đạt ngưỡng 60%.
 - Playwright Chromium: 24/24 pass trên Desktop Chrome và Pixel 5, gồm 12 scenario student/admin; axe kiểm tra login, student portal và admin console.
-- Lighthouse production preview: Performance 100, Accessibility 100, Best Practices 96.
-- k6 availability: 20 VUs/2 phút, 2.400 requests, checks 100%, error rate 0%, p95 4.63 ms.
-- k6 booking race: 20 VUs đồng thời, 1 response `201`, 19 response `409`, checks 100%, error rate 0%, p95 41.19 ms; summary đã loại JWT setup data trước lưu artifact.
-- OWASP ZAP baseline final: frontend 0 High/0 Medium/9 Low/7 Informational; public API 0 High/0 Medium/0 Low/3 Informational. Chỉ là unauthenticated baseline, không phải pentest.
+- Lighthouse production preview: Performance 99, Accessibility 100, Best Practices 96.
+- k6 availability: 20 VUs/2 phút, 2.400 requests, checks 100%, error rate 0%, p95 5.65 ms.
+- k6 booking race: 20 VUs đồng thời, 1 response `201`, 19 response `409`, checks 100%, error rate 0%, p95 67.55 ms; summary đã loại JWT setup data trước lưu artifact.
+- OWASP ZAP baseline final: frontend 0 High/0 Medium/9 Low/5 Informational; public API 0 High/0 Medium/0 Low/4 Informational. Chỉ là unauthenticated baseline, không phải pentest.
 - Backend TypeScript và frontend Vite production build pass.

@@ -8,7 +8,7 @@
 
 StudySpace là **Software Under Test (SUT)**: hệ thống quản lý phòng học và đặt chỗ. Mục tiêu bài tập không phải xây một công cụ kiểm thử độc lập, mà là xác định yêu cầu chất lượng, thiết kế và thực thi kiểm thử nhiều tầng, quản lý defect, rồi đánh giá chất lượng SUT bằng bằng chứng tái lập được. Bộ Vitest, Supertest, fast-check, Playwright, StrykerJS, k6, OWASP ZAP và Lighthouse là phương tiện kiểm định đi kèm SUT.
 
-Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw result -> Defect/Fix -> Retest`. Một kết luận không có evidence được ghi là **chưa đánh giá**. Bản hiện tại vẫn là bản nháp vì thông tin bìa chưa được cung cấp; evidence snapshot đã gắn với commit kiểm thử `14cd9a3` và hai workflow cuối.
+Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw result -> Defect/Fix -> Retest`. Một kết luận không có evidence được ghi là **chưa đánh giá**. Bản hiện tại vẫn là bản nháp vì thông tin bìa chưa được cung cấp; evidence snapshot đã gắn với commit kiểm thử `73f1ed4` và hai workflow cuối.
 
 ## 1. Phân công và kế hoạch
 
@@ -56,7 +56,7 @@ Sơ đồ use case, ERD và component được duy trì ở `docs/00-diagrams.md
 - Bootstrap database mới: `npm run db:setup`, chỉ dùng migration versioned rồi seed.
 - Reset demo/test database: `npm run db:reset`; đây là thao tác phá hủy dữ liệu và phải dùng trên database được chọn rõ.
 - Unit/API dùng isolated SQLite database; E2E seed dữ liệu riêng trước khi chạy.
-- `docs/evidence/bootstrap-summary.json` ghi nhận migration trên database tạm. Fresh-clone summary cũ không được dùng làm bằng chứng final; manifest final trỏ tới core/evidence workflow gắn `14cd9a3`.
+- `docs/evidence/bootstrap-summary.json` ghi nhận migration trên database tạm. Fresh-clone summary cũ không được dùng làm bằng chứng final; manifest final trỏ tới core/evidence workflow gắn `73f1ed4`.
 
 ## 5. Test Plan và kỹ thuật thiết kế
 
@@ -83,12 +83,12 @@ Entry criteria: migration/seed thành công, build được, test data và brows
 | V8 coverage | Line 98,35%; branch 94,02%; function 100% | Chỉ source được instrument trong cấu hình |
 | Mutation | 86 killed; 20 survived; 2 no-coverage; 27 compile-error; 81,13% | Chỉ `booking-policy.ts`; dùng `killed / (killed + survived)`, compile-error và no-coverage báo cáo riêng |
 | E2E Chromium | 24/24 pass; 12 scenario trên desktop/mobile | Không đại diện Firefox/WebKit |
-| k6 availability | 20 VUs/2 phút; 2.400 request; checks 100%; error 0%; p95 4,63 ms | Một máy/môi trường và một workload |
-| k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 41,19 ms | SQLite single-instance; summary đã sanitize JWT |
-| ZAP baseline | Frontend 0H/0M/9L/7I; API 0H/0M/0L/3I | Unauthenticated baseline; không phải pentest authenticated |
-| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
+| k6 availability | 20 VUs/2 phút; 2.400 request; checks 100%; error 0%; p95 5,65 ms | Một máy/môi trường và một workload |
+| k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 67,55 ms | SQLite single-instance; summary đã sanitize JWT |
+| ZAP baseline | Frontend 0H/0M/9L/5I; API 0H/0M/0L/4I | Unauthenticated baseline; không phải pentest authenticated |
+| Lighthouse production preview | Performance 99; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
 
-Các số liệu final trong bảng được lấy từ `docs/evidence/final/manifest.json`, với core run `37140913623` và quality-evidence run `37140920740`, đều gắn commit kiểm thử `14cd9a3`. Mutation score là `86 / (86 + 20) = 81,13%`; no-coverage và 27 compile-error được báo cáo riêng. Raw artifact đầy đủ nằm trong artifact của GitHub Actions, không được chép vào repository.
+Các số liệu final trong bảng được lấy từ `docs/evidence/final/manifest.json`, với core run `37175430222` và quality-evidence run `37175436810`, đều gắn commit kiểm thử `73f1ed4`. Mutation score là `86 / (86 + 20) = 81,13%`; no-coverage và 27 compile-error được báo cáo riêng. Raw artifact đầy đủ nằm trong artifact của GitHub Actions, không được chép vào repository.
 
 ## 7. Truy vết và quản lý defect
 
