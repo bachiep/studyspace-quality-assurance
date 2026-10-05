@@ -2,7 +2,7 @@
 
 ## Đánh giá và kiểm định chất lượng phần mềm - StudySpace
 
-> **Thông tin phải hoàn thiện trước khi nộp:** `[TRƯỜNG]`, `[KHOA]`, `[GIẢNG VIÊN]`, `[NHÓM]`, `[HỌ TÊN - MSSV]`.
+> **Thông tin phải hoàn thiện trước khi nộp:** `[TRƯỜNG]`, `[KHOA]`, `[GIẢNG VIÊN]`, `[HỌ TÊN 1 - MSSV 1]`, `[HỌ TÊN 2 - MSSV 2]`.
 
 ## Tóm tắt
 
@@ -12,9 +12,12 @@ Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw
 
 ## 1. Phân công và kế hoạch
 
-| Thành viên | MSSV | Trách nhiệm | Bằng chứng đóng góp |
-|---|---|---|---|
-| `[HỌ TÊN]` | `[MSSV]` | `[PHÂN CÔNG]` | `[COMMIT/ISSUE/PHẦN BÁO CÁO]` |
+| Thành viên | MSSV | Trách nhiệm | Tỷ lệ | Bằng chứng đóng góp |
+|---|---|---|---|---|
+| `[HỌ TÊN 1]` | `[MSSV 1]` | Nhóm trưởng: điều phối; SRS/kiến trúc; backend/domain, Prisma/transaction; CI, quality gate và evidence; tích hợp và rà soát báo cáo | 55% | `[COMMIT/ISSUE/PHẦN BÁO CÁO]` |
+| `[HỌ TÊN 2]` | `[MSSV 2]` | Frontend Student/Admin; Playwright và accessibility; test case/API hỗ trợ; sơ đồ, ảnh giao diện và hiệu chỉnh tài liệu | 45% | `[COMMIT/ISSUE/PHẦN BÁO CÁO]` |
+
+Tỷ lệ trên là tỷ lệ phân công khối lượng đã thống nhất, không thay thế bằng chứng đóng góp thực tế. Tên, MSSV và liên kết commit/issue phải được cập nhật trước khi nộp.
 
 Kế hoạch thực hiện gồm: đặc tả SRS; thiết kế kiến trúc và dữ liệu; hiện thực bốn phân hệ; thiết kế test theo rủi ro; thực thi kiểm thử chức năng/phi chức năng; ghi nhận và sửa defect; kiểm thử hồi quy; tổng hợp evidence và đánh giá ISO/IEC 25010:2023.
 
