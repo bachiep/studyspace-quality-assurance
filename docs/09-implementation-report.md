@@ -58,7 +58,7 @@ npm run db:generate
 npm run db:setup
 ```
 
-`db:setup` tạo file SQLite nếu chưa có, áp dụng migration versioned và seed dữ liệu demo. Với database demo dùng schema cũ, chạy `npm run db:reset` một lần; lệnh này xóa dữ liệu của database demo cục bộ trước khi seed lại.
+`db:setup` tạo file SQLite nếu chưa có, áp dụng migration versioned và seed dữ liệu demo. Nếu database demo cũ không có lịch sử migration hoặc không thể áp dụng migration hiện tại, dùng `npm run db:reset` thay cho `db:setup`; lệnh này xóa dữ liệu, áp migration và seed lại trong một bước. Không chạy cả hai lệnh trên cùng một lần khởi tạo.
 
 Chạy backend và frontend ở hai terminal bằng `npm run dev --workspace backend` và `npm run dev --workspace frontend`. Thông tin tài khoản seed và cổng dịch vụ có tại README gốc.
 

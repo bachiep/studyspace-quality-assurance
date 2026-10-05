@@ -13,7 +13,7 @@ npm run db:setup
 
 `db:setup` áp các migration đã version hóa rồi mới seed dữ liệu demo, để môi trường cục bộ luôn theo đúng lịch sử migration.
 
-Nếu đã có database demo theo schema cũ, chạy `npm run db:reset` một lần trước khi chạy `db:setup`. Lệnh reset chỉ dành cho database demo cục bộ và sẽ xóa dữ liệu trong database đó.
+Nếu database demo cũ chưa có lịch sử migration hoặc không thể áp dụng migration hiện tại, dùng `npm run db:reset` thay cho `db:setup`. Lệnh reset đã xóa dữ liệu, áp migration và seed lại; không cần chạy `db:setup` thêm lần nữa. Chỉ dùng lệnh này trên database demo cục bộ đã chọn rõ.
 
 Mở hai terminal:
 
