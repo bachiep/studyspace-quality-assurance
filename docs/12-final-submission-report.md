@@ -90,7 +90,7 @@ Nhóm không dùng một metric đơn lẻ để đại diện cho chất lượ
 
 | Hoạt động | Kết quả trong summary hiện có | Giới hạn |
 |---|---|---|
-| Unit + PBT + API | 47/47 pass | Chạy local sau đợt sửa correctness/a11y |
+| Unit + PBT + API | 47/47 pass | Core CI run `37350847374`, commit kiểm thử `47559ed` |
 | V8 coverage | Line 98,35%; branch 94,02%; function 100% | Chỉ source được instrument trong cấu hình |
 | Mutation | 86 killed; 20 survived; 2 no-coverage; 27 compile-error; 81,13% | Chỉ `booking-policy.ts`; dùng `killed / (killed + survived)`, compile-error và no-coverage báo cáo riêng |
 | E2E Chromium | 24/24 pass; 12 scenario trên desktop/mobile | Không đại diện Firefox/WebKit |
