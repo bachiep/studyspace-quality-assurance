@@ -50,6 +50,10 @@ Booking lưu hai active key duy nhất theo room-slot và user-slot. Khi booking
 
 Sơ đồ use case, ERD và component được duy trì ở `docs/00-diagrams.md` và được render trong báo cáo Word. Môi trường cục bộ đã kiểm thử dùng HTTP trên loopback; HTTPS chỉ là yêu cầu triển khai, chưa có evidence trong repository.
 
+### Các quyết định thiết kế phục vụ kiểm thử
+
+Một số lựa chọn kiến trúc được đưa ra để invariant có thể quan sát và kiểm chứng, không chỉ để hoàn thành chức năng. Date parser nghiêm ngặt ngăn JavaScript tự chuẩn hóa ngày không tồn tại; utility timezone tập trung giúp rule hôm nay, hủy và check-in dùng cùng một mốc; active key cùng unique constraint biểu diễn trực tiếp hai loại conflict; audit được ghi trong cùng transaction để có thể kiểm tra rollback; và phòng có lịch sử chuyển `INACTIVE` thay vì hard-delete. Mỗi lựa chọn có test tương ứng ở unit, API hoặc database và đều có giới hạn: chưa bao phủ nhiều timezone, multi-instance hoặc DBMS khác SQLite.
+
 ## 4. Môi trường và khả năng tái lập
 
 - Runtime: Node.js, TypeScript; frontend React/Vite; backend Express/Prisma/SQLite.
@@ -74,6 +78,10 @@ Sơ đồ use case, ERD và component được duy trì ở `docs/00-diagrams.md
 | UI quality | Lighthouse | Automated audit | Performance, accessibility, best practices |
 
 Entry criteria: migration/seed thành công, build được, test data và browser sẵn sàng. Exit criteria: suite bắt buộc pass; line >=85%, branch >=70%, mutation >=60%; mỗi API nghiệp vụ có ca dương và ca âm/biên phù hợp; race có đúng một `201`; ZAP không có High; k6 và Lighthouse đạt threshold đã khai báo.
+
+### Kiểm soát độ tin cậy của kết quả
+
+Nhóm không dùng một metric đơn lẻ để đại diện cho chất lượng. Coverage được đối chiếu với assertion, mutation và RTM; k6 dùng đồng thời checks và thresholds; API kiểm tra status, error contract, trạng thái sau mutation và audit; artifact giữ commit, phiên bản và SHA-256. Đồng hồ, seed và database được cô lập để giảm sai lệch nội bộ. Ngược lại, local SQLite/Chromium không đại diện production, artifact có thời hạn lưu giữ và một oracle sai vẫn có thể dẫn tới kết luận sai. Vì vậy từ “đạt” trong báo cáo chỉ có nghĩa là đạt gate trên workload và môi trường đã ghi, không phải chứng nhận hay bảo đảm tuyệt đối.
 
 ## 6. Thực thi và kết quả có bằng chứng
 
