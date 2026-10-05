@@ -17,6 +17,8 @@ StudySpace là SUT cho bài tập lớn Đánh giá và kiểm định phần m�
 
 Sơ đồ use case, ERD và component diagram nằm tại [00-diagrams.md](00-diagrams.md). Chi tiết requirement và use case nằm tại [01-srs.md](01-srs.md).
 
+Ngày hiển thị ở các ô chọn ngày trên frontend cũng được tính bằng `Asia/Ho_Chi_Minh`, cùng quy ước với `booking-policy.ts` ở backend. API vẫn là lớp kiểm tra cuối cùng cho ngày không tồn tại, khoảng 14 ngày, slot đã qua, hủy và check-in; helper giao diện chỉ bảo đảm các biên hiển thị không phụ thuộc múi giờ máy người dùng.
+
 ## 3. Mô hình dữ liệu và toàn vẹn
 
 `User`, `Room`, `Equipment`, `RoomEquipment`, `RoomClosure`, `Booking` và `AuditLog` là các thực thể nghiệp vụ. Email user, tên room và tên equipment là duy nhất. Booking lưu hai unique active-key: `roomId/date/startTime` và `userId/date/startTime` chỉ khi trạng thái là `BOOKED` hoặc `CHECKED_IN`; transaction cùng việc chuyển lỗi unique sang HTTP `409` bảo vệ cạnh tranh ở tầng API. Với SQLite single-instance, write booking đi qua hàng đợi trong process để database lock không biến conflict hợp lệ thành `500`; hai unique key vẫn là lớp toàn vẹn cuối cùng. Khi `CANCELLED` hoặc `NO_SHOW`, các khóa active được gỡ nhưng lịch sử vẫn giữ lại. Room có lịch sử chỉ đổi sang `INACTIVE`, không xóa nghiệp vụ.

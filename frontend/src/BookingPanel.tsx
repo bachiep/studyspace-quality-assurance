@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { api, Booking, Room, Session } from "./api";
+import { businessDateOffset } from "./businessDate";
 
 const slots = Array.from({ length: 14 }, (_, index) => `${String(index + 7).padStart(2, "0")}:00`);
-const formatLocalDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-const dateAfter = (days = 1) => { const date = new Date(); date.setDate(date.getDate() + days); return formatLocalDate(date); };
+const dateAfter = (days = 1) => businessDateOffset(days);
 
 function Notice({ message, type = "error" }: { message: string; type?: "error" | "success" }) {
   return <p role="alert" className={`rounded-xl px-3 py-2 text-sm ${type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>{message}</p>;
