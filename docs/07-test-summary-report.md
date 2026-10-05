@@ -24,7 +24,7 @@
 - Token hết hạn bị từ chối, Helmet phát security headers và CORS chỉ cấp cho origin frontend được cấu hình; bằng chứng API nằm trong `backend/tests/api.spec.ts`.
 - Login không thành công bị giới hạn theo client; ngưỡng/cửa sổ cấu hình qua môi trường và vượt ngưỡng trả `429` `AUTH_RATE_LIMITED`.
 - Phòng có lịch sử được chuyển `INACTIVE`, không xóa dữ liệu nghiệp vụ.
-- Axe và Lighthouse production preview đạt ngưỡng accessibility/best practices đã đặt; Performance đạt 98 trong lần chạy này.
+- Axe và Lighthouse production preview đạt ngưỡng accessibility/best practices đã đặt; Performance đạt 100 trong lần chạy final được ghi trong manifest.
 - Luồng E2E chạy tuần tự qua desktop/mobile để cùng database test không tạo xung đột giả giữa các project.
 - ZAP final đã có artifact; High gate bằng 0. Các Medium/Low vẫn phải được phân tích, không được gọi là “không có finding”.
 
