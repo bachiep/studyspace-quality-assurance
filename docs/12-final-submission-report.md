@@ -8,7 +8,7 @@
 
 StudySpace là **Software Under Test (SUT)**: hệ thống quản lý phòng học và đặt chỗ. Mục tiêu bài tập không phải xây một công cụ kiểm thử độc lập, mà là xác định yêu cầu chất lượng, thiết kế và thực thi kiểm thử nhiều tầng, quản lý defect, rồi đánh giá chất lượng SUT bằng bằng chứng tái lập được. Bộ Vitest, Supertest, fast-check, Playwright, StrykerJS, k6, OWASP ZAP và Lighthouse là phương tiện kiểm định đi kèm SUT.
 
-Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw result -> Defect/Fix -> Retest`. Một kết luận không có evidence được ghi là **chưa đánh giá**. Bản hiện tại vẫn là bản nháp vì thông tin bìa chưa được cung cấp; evidence snapshot đã gắn với commit kiểm thử `e89bfd1` và hai workflow cuối.
+Báo cáo áp dụng nguyên tắc `Requirement -> Technique -> Test case -> Raw result -> Defect/Fix -> Retest`. Một kết luận không có evidence được ghi là **chưa đánh giá**. Bản hiện tại vẫn là bản nháp vì thông tin bìa chưa được cung cấp; evidence snapshot đã gắn với commit kiểm thử `364f3b9` và hai workflow cuối.
 
 ## 1. Phân công và kế hoạch
 
@@ -63,7 +63,7 @@ Một số lựa chọn kiến trúc được đưa ra để invariant có thể
 - Bootstrap database mới: `npm run db:setup`, chỉ dùng migration versioned rồi seed.
 - Reset demo/test database: `npm run db:reset`; đây là thao tác phá hủy dữ liệu và phải dùng trên database được chọn rõ.
 - Unit/API dùng isolated SQLite database; E2E seed dữ liệu riêng trước khi chạy.
-- `docs/evidence/bootstrap-summary.json` ghi nhận migration trên database tạm. Fresh-clone summary cũ không được dùng làm bằng chứng final; manifest final trỏ tới core/evidence workflow gắn `e89bfd1`.
+- `docs/evidence/bootstrap-summary.json` ghi nhận migration trên database tạm. Fresh-clone summary cũ không được dùng làm bằng chứng final; manifest final trỏ tới core/evidence workflow gắn `364f3b9`.
 
 ## 5. Test Plan và kỹ thuật thiết kế
 
@@ -94,12 +94,12 @@ Nhóm không dùng một metric đơn lẻ để đại diện cho chất lượ
 | V8 coverage | Line 98,35%; branch 94,02%; function 100% | Chỉ source được instrument trong cấu hình |
 | Mutation | 86 killed; 20 survived; 2 no-coverage; 27 compile-error; 81,13% | Chỉ `booking-policy.ts`; dùng `killed / (killed + survived)`, compile-error và no-coverage báo cáo riêng |
 | E2E Chromium | 24/24 pass; 12 scenario trên desktop/mobile | Không đại diện Firefox/WebKit |
-| k6 availability | 20 VUs/2 phút; 2.400 request; checks 100%; error 0%; p95 5,78 ms | Một máy/môi trường và một workload |
-| k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 68,22 ms | SQLite single-instance; summary đã sanitize JWT |
-| ZAP baseline | Frontend 0H/0M/9L/7I; API 0H/0M/0L/3I | Unauthenticated baseline; không phải pentest authenticated |
-| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
+| k6 availability | 20 VUs/2 phút; 2.400 request; checks 100%; error 0%; p95 6,17 ms | Một máy/môi trường và một workload |
+| k6 booking race | 1 x `201`, 19 x `409`; checks 100%; error 0%; p95 62,06 ms | SQLite single-instance; summary đã sanitize JWT |
+| ZAP baseline | Frontend 0H/0M/9L/8I; API 0H/0M/0L/2I | Unauthenticated baseline; không phải pentest authenticated |
+| Lighthouse production preview | Performance 98; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
 
-Các số liệu final trong bảng được lấy từ `docs/evidence/final/manifest.json`, với core run `37343853893` và quality-evidence run `37344566560`, đều gắn commit kiểm thử `e89bfd1`. Mutation score là `86 / (86 + 20) = 81,13%`; no-coverage và 27 compile-error được báo cáo riêng. Raw artifact đầy đủ nằm trong artifact của GitHub Actions, không được chép vào repository.
+Các số liệu final trong bảng được lấy từ `docs/evidence/final/manifest.json`, với core run `37348312215` và quality-evidence run `37348951730`, đều gắn commit kiểm thử `364f3b9`. Mutation score là `86 / (86 + 20) = 81,13%`; no-coverage và 27 compile-error được báo cáo riêng. Raw artifact đầy đủ nằm trong artifact của GitHub Actions, không được chép vào repository.
 
 ## 7. Truy vết và quản lý defect
 
@@ -118,7 +118,7 @@ Báo cáo sử dụng chín đặc tính của phiên bản 2023: Functional sui
 - Compatibility mới được kiểm tra trên hai viewport Chromium.
 - Interaction capability có Lighthouse/axe và luồng E2E, chưa có usability study với người dùng.
 - Reliability có conflict/race evidence và rollback test; phạm vi kết luận atomicity là các mutation đã có test.
-- Security có JWT/RBAC/validation/rate-limit và baseline scan giới hạn (API 0 High/Medium/Low, 3 Informational sau hardening), không tương đương pentest; frontend còn 9 Low COEP/COOP/CORP và 7 Informational cần đánh giá khi triển khai thực tế.
+- Security có JWT/RBAC/validation/rate-limit và baseline scan giới hạn (API 0 High/Medium/Low, 2 Informational sau hardening), không tương đương pentest; frontend còn 9 Low COEP/COOP/CORP và 8 Informational cần đánh giá khi triển khai thực tế.
 - Maintainability có TypeScript, migration, coverage/mutation; mutation chỉ ở domain policy.
 - Flexibility có cấu hình/migration/bootstrap trên môi trường đã ghi, chưa chứng minh đa DBMS.
 - Safety chưa đánh giá và nằm ngoài phạm vi vì không có hazard analysis.
