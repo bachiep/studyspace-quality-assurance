@@ -48,7 +48,7 @@ Kiến trúc ba tầng gồm React/Vite/TypeScript/Tailwind ở presentation; Ex
 
 Booking lưu hai active key duy nhất theo room-slot và user-slot. Khi booking chuyển sang trạng thái cuối, khóa active được giải phóng nhưng bản ghi lịch sử được giữ. Trong phạm vi SQLite single-instance, booking-state write được tuần tự hóa; unique constraint và transaction vẫn là lớp bảo vệ dữ liệu. HTTP `409` là contract cho xung đột nghiệp vụ.
 
-Sơ đồ use case, ERD và component được duy trì ở `docs/00-diagrams.md` và được render trong PDF. Môi trường cục bộ đã kiểm thử dùng HTTP trên loopback; HTTPS chỉ là yêu cầu triển khai, chưa có evidence trong repository.
+Sơ đồ use case, ERD và component được duy trì ở `docs/00-diagrams.md` và được render trong báo cáo Word. Môi trường cục bộ đã kiểm thử dùng HTTP trên loopback; HTTPS chỉ là yêu cầu triển khai, chưa có evidence trong repository.
 
 ## 4. Môi trường và khả năng tái lập
 
