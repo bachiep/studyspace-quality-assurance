@@ -64,7 +64,7 @@ Mọi endpoint `/admin/*` yêu cầu JWT hợp lệ có vai trò `ADMIN`. JWT h�
 | REQ-BOOK-03 | Xem lịch sử | Student chỉ xem booking của mình, kèm thông tin phòng, sắp ngày/giờ tăng dần. |
 | REQ-BOOK-04 | Hủy và check-in | Student chỉ hủy/check-in booking của mình theo BR-BOOK-06/07; thao tác thành công có audit. |
 | REQ-REPORT-01 | Vận hành người dùng và booking | Admin xem người dùng/booking, thay đổi role người dùng khác và trạng thái booking; thay đổi được audit. |
-| REQ-REPORT-02 | Báo cáo sử dụng | Admin xem tổng booking, check-in, no-show, occupancy rate và phòng theo lượt booking giảm dần trong khoảng ngày báo cáo. |
+| REQ-REPORT-02 | Báo cáo sử dụng | Admin xem tổng booking, check-in, no-show, `reservationRate` và `utilizationRate`, cùng `occupancyRate` là alias tương thích của `reservationRate`, và danh sách phòng theo lượt booking giảm dần trong khoảng ngày báo cáo. `reservationRate = (BOOKED + CHECKED_IN + NO_SHOW) / tổng slot khả dụng`; `utilizationRate = CHECKED_IN / tổng slot khả dụng`. |
 
 ## 5. Đặc tả use case
 

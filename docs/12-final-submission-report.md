@@ -107,7 +107,7 @@ Báo cáo sử dụng chín đặc tính của phiên bản 2023: Functional sui
 - Compatibility mới được kiểm tra trên hai viewport Chromium.
 - Interaction capability có Lighthouse/axe và luồng E2E, chưa có usability study với người dùng.
 - Reliability có conflict/race evidence và rollback test; phạm vi kết luận atomicity là các mutation đã có test.
-- Security có JWT/RBAC/validation/rate-limit và baseline scan giới hạn (API 0 High/Medium/Low sau hardening), không tương đương pentest; frontend còn 9 Low COEP/COOP/CORP cần đánh giá khi triển khai thực tế.
+- Security có JWT/RBAC/validation/rate-limit và baseline scan giới hạn (API 0 High/Medium/Low, 2 Informational sau hardening), không tương đương pentest; frontend còn 9 Low COEP/COOP/CORP và 5 Informational cần đánh giá khi triển khai thực tế.
 - Maintainability có TypeScript, migration, coverage/mutation; mutation chỉ ở domain policy.
 - Flexibility có cấu hình/migration/bootstrap trên môi trường đã ghi, chưa chứng minh đa DBMS.
 - Safety chưa đánh giá và nằm ngoài phạm vi vì không có hazard analysis.
