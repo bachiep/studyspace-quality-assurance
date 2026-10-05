@@ -122,6 +122,23 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 | Retest | `TC-API-36` pass; CI run [36953349825](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/36953349825) success. |
 | Trạng thái | Closed / Retested |
 
+## BUG-008 — Nút disabled trong Admin không đủ tương phản
+
+| Trường | Nội dung |
+|---|---|
+| Nguồn | [GitHub issue #32](https://github.com/bachiep/studyspace-quality-assurance/issues/32) — Closed |
+| Severity | Medium |
+| Phân hệ | Admin console / accessibility |
+| Requirement liên quan | REQ-ROOM-04; REQ-REPORT-01 |
+| Môi trường phát hiện | Playwright Chromium desktop, axe accessibility check |
+| Bước tái hiện | 1. Seed database E2E. 2. Đăng nhập bằng tài khoản Admin. 3. Mở Admin console khi lựa chọn phòng chưa sẵn sàng. 4. Chạy `[TC-E2E-12]`. |
+| Actual result | Nút `Lưu thiết bị cho phòng` ở trạng thái disabled bị giảm opacity, foreground `#848c9b` trên nền `#f8fafc`, contrast 3,23:1; axe báo `color-contrast` mức serious. |
+| Expected result | Nút disabled vẫn phải đủ tương phản để người dùng nhận biết nội dung và trạng thái điều khiển. |
+| Cách sửa | Bỏ `disabled:opacity-50` khỏi style dùng chung `.button`; giữ cursor disabled nhưng không làm giảm contrast của chữ. |
+| Fix commit | [`e89bfd1`](https://github.com/bachiep/studyspace-quality-assurance/commit/e89bfd1d0fcd16ee9b8a7f6d884eddbc2bff1eeb) |
+| Retest | Local Playwright 24/24 pass; Core CI [37343853893](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37343853893) pass, gồm `[TC-E2E-12]` trên desktop và mobile. |
+| Trạng thái | Closed / Retested |
+
 ## Quy ước truy vết
 
 - `BUG-001` được liên kết với `REQ-BOOK-01` trong RTM và với `TC-E2E-01` trong test-case catalog.
@@ -130,6 +147,7 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 - `BUG-005` liên kết với REQ-ROOM-05 và `TC-API-34` trong RTM.
 - `BUG-006` liên kết với REQ-AUTH-02 và `TC-API-35` trong RTM.
 - `BUG-007` liên kết với REQ-BOOK-04 và `TC-API-36` trong RTM.
+- `BUG-008` liên kết với `REQ-ROOM-04`, `REQ-REPORT-01` và `[TC-E2E-12]`; lỗi được phát hiện ở lớp accessibility, không làm thay đổi business rule.
 
 ## Bổ sung cho BUG-002 — bootstrap bằng migration versioned
 
