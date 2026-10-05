@@ -99,7 +99,7 @@ Nhóm không dùng một metric đơn lẻ để đại diện cho chất lượ
 | ZAP baseline | Frontend 0H/0M/9L/5I; API 0H/0M/0L/2I | Unauthenticated baseline; không phải pentest authenticated |
 | Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Một URL và môi trường local production preview |
 
-Các số liệu final trong bảng được lấy từ `docs/evidence/final/manifest.json`, với core run `37350847374` và quality-evidence run `37351470090`, đều gắn commit kiểm thử `47559ed`. Mutation score là `86 / (86 + 20) = 81,13%`; no-coverage và 27 compile-error được báo cáo riêng. Raw artifact đầy đủ nằm trong artifact của GitHub Actions, không được chép vào repository.
+Các số liệu final trong bảng được lấy từ `docs/evidence/final/manifest.json`, với core run `37350847374` và quality-evidence run `37351470090`, đều gắn commit kiểm thử `47559ed`. Commit `052e95b` chỉ đồng bộ tài liệu sau lần đo, không thay đổi SUT hay bộ test. Mutation score là `86 / (86 + 20) = 81,13%`; no-coverage và 27 compile-error được báo cáo riêng. Raw artifact đầy đủ nằm trong artifact của GitHub Actions, không được chép vào repository.
 
 ## 7. Truy vết và quản lý defect
 

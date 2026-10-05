@@ -34,7 +34,7 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 | Expected result | Đúng một booking `201`; toàn bộ request cạnh tranh còn lại `409`; không có lỗi hệ thống. |
 | Cách sửa | Tuần tự hóa write booking trong SQLite single-instance; vẫn giữ transaction và active-key unique constraint làm lớp toàn vẹn database. |
 | Fix commit | [`7be5a44`](https://github.com/bachiep/studyspace-quality-assurance/commit/7be5a44) |
-| Retest | `TC-API-31` (20 request) và `TC-NF-02`: 1 response `201`, 19 response `409`, error rate 0%, p95 292.09 ms. |
+| Retest | `TC-API-31` và final `TC-NF-02` trong quality-evidence run [37351470090](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37351470090): 1 response `201`, 19 response `409`, error rate 0%, p95 64.43 ms. |
 | Trạng thái | Closed / Retested |
 
 ## BUG-002 — CI chưa khởi tạo SQLite trước E2E
@@ -136,7 +136,7 @@ Tài liệu này chỉ ghi nhận lỗi đã được tạo và đóng trên Git
 | Expected result | Nút disabled vẫn phải đủ tương phản để người dùng nhận biết nội dung và trạng thái điều khiển. |
 | Cách sửa | Bỏ `disabled:opacity-50` khỏi style dùng chung `.button`; giữ cursor disabled nhưng không làm giảm contrast của chữ. |
 | Fix commit | [`e89bfd1`](https://github.com/bachiep/studyspace-quality-assurance/commit/e89bfd1d0fcd16ee9b8a7f6d884eddbc2bff1eeb) |
-| Retest | Local Playwright 24/24 pass; Core CI [37343853893](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37343853893) pass, gồm `[TC-E2E-12]` trên desktop và mobile. |
+| Retest | Local Playwright 24/24 pass; final Core CI [37350847374](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37350847374) pass, gồm `[TC-E2E-12]` trên desktop và mobile. |
 | Trạng thái | Closed / Retested |
 
 ## Quy ước truy vết
