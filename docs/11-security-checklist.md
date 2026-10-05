@@ -14,16 +14,16 @@ Checklist này ghi nhận phạm vi đã kiểm tra của StudySpace. “Đạt�
 | Error contract | Prisma duplicate/not-found và domain errors được chuẩn hóa, không trả stack trace cho client. | `TC-API-04`, `TC-API-34`, ZAP baseline | Đạt trong phạm vi test |
 | Secrets | `.env` và database cục bộ bị loại khỏi Git; `.env.example` không có secret thật. | `.gitignore`, `backend/.env.example` | Đạt |
 | Dependency risk | Audit runtime dependency không có High/Critical. | CI security step | Đạt |
-| Dynamic scan | ZAP baseline JSON frontend/API gắn với commit và workflow; High alert phải bằng 0. | `quality-evidence.yml`, `docs/evidence/final/manifest.json`, run 37348951730 | Đạt gate High = 0; frontend 0H/0M/9L/8I, API 0H/0M/0L/2I |
+| Dynamic scan | ZAP baseline JSON frontend/API gắn với commit và workflow; High alert phải bằng 0. | `quality-evidence.yml`, `docs/evidence/final/manifest.json`, run 37351470090 | Đạt gate High = 0; frontend 0H/0M/9L/5I, API 0H/0M/0L/2I |
 
 ## Phân tích finding ZAP final
 
 | Phạm vi | Finding | Mức/đếm | Xử lý và giới hạn |
 |---|---|---:|---|
 | Frontend | COEP/COOP/CORP header missing hoặc invalid | Low / 9 | Ghi nhận để harden header khi triển khai; không chặn quality gate hiện tại vì ứng dụng local không dùng cross-origin isolation. |
-| API | CSP directive thiếu fallback trước hardening | Medium / 3 instances | Đã sửa bằng CSP tường minh trên response thành công và fallback 404; snapshot cuối run 37348951730 còn 0 Medium. |
-| API | Permissions-Policy header chưa đặt trước hardening | Low / 3 instances | Đã đặt header ở API middleware; snapshot cuối run 37348951730 còn 0 Low. |
-| Frontend/API | Nội dung storable/cacheable và insight log | Low/Informational | Không phải lỗi xác thực; frontend snapshot còn 9 Low/8 Informational và API còn 2 Informational; cần kiểm tra cache-control và log vận hành khi triển khai production. |
+| API | CSP directive thiếu fallback trước hardening | Medium / 3 instances | Đã sửa bằng CSP tường minh trên response thành công và fallback 404; snapshot cuối run 37351470090 còn 0 Medium. |
+| API | Permissions-Policy header chưa đặt trước hardening | Low / 3 instances | Đã đặt header ở API middleware; snapshot cuối run 37351470090 còn 0 Low. |
+| Frontend/API | Nội dung storable/cacheable và insight log | Low/Informational | Không phải lỗi xác thực; frontend snapshot còn 9 Low/5 Informational và API còn 2 Informational; cần kiểm tra cache-control và log vận hành khi triển khai production. |
 
 Các finding Medium/Low không bị che giấu. ZAP baseline này unauthenticated và public-scope, nên không thay thế authenticated scan, manual review hoặc penetration test.
 

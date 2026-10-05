@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "status": "evidence-snapshot",
-  "verifiedAt": "2026-10-05T17:35:29Z",
+  "verifiedAt": "2026-10-05T17:55:34Z",
   "source": {
-    "testedCommit": "364f3b99870d2fb15ed7c8b28eef90251198a628",
-    "coreWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37348312215",
-    "evidenceWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37348951730",
+    "testedCommit": "47559ed8316476054282dda005b76aefb25af1f2",
+    "coreWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37350847374",
+    "evidenceWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37351470090",
     "repository": "https://github.com/bachiep/studyspace-quality-assurance",
-    "coreWorkflowCreatedAt": "2026-10-05T17:25:27Z",
-    "coreWorkflowCompletedAt": "2026-10-05T17:30:06Z",
-    "evidenceWorkflowCreatedAt": "2026-10-05T17:30:35Z",
-    "evidenceWorkflowCompletedAt": "2026-10-05T17:35:36Z"
+    "coreWorkflowCreatedAt": "2026-10-05T17:46:21Z",
+    "coreWorkflowCompletedAt": "2026-10-05T17:50:42Z",
+    "evidenceWorkflowCreatedAt": "2026-10-05T17:50:46Z",
+    "evidenceWorkflowCompletedAt": "2026-10-05T17:55:41Z"
   },
   "environment": {
     "node": "v22.23.3",
@@ -35,26 +35,26 @@
     },
     "playwright": { "passed": 24, "expected": 24, "skipped": 0, "unexpected": 0, "flaky": 0 },
     "k6": {
-      "availability": { "requests": 2400, "p95Ms": 6.17, "checksRate": 1, "requestFailureRate": 0, "passed": true },
-      "bookingRace": { "requests": 22, "created201": 1, "conflict409": 19, "checksRate": 1, "expectedOutcomeRate": 1, "p95Ms": 62.06, "passed": true }
+      "availability": { "requests": 2400, "p95Ms": 5.92, "checksRate": 1, "requestFailureRate": 0, "passed": true },
+      "bookingRace": { "requests": 22, "created201": 1, "conflict409": 19, "checksRate": 1, "expectedOutcomeRate": 1, "p95Ms": 64.43, "passed": true }
     },
-    "lighthouse": { "performance": 98, "accessibility": 100, "bestPractices": 96 },
+    "lighthouse": { "performance": 100, "accessibility": 100, "bestPractices": 96 },
     "zapBaseline": {
       "scope": "unauthenticated frontend preview and public API baseline",
-      "frontend": { "high": 0, "medium": 0, "low": 9, "informational": 8 },
+      "frontend": { "high": 0, "medium": 0, "low": 9, "informational": 5 },
       "api": { "high": 0, "medium": 0, "low": 0, "informational": 2 },
       "passedHighAlertGate": true
     }
   },
   "artifacts": [
     { "workflow": "core", "path": "backend/coverage/coverage-summary.json", "sha256": "c28d242bd940de9c86146808c5e28aabc1ee73fc82366cc1683b4b8b576ba872" },
-    { "workflow": "core", "path": "reports/generated/stryker/mutation.json", "sha256": "3f2f0d36efb27853f01f79af4ea6573a7aaa4582ff9345757170a13014fccd48" },
-    { "workflow": "core", "path": "reports/generated/playwright-results.json", "sha256": "80d86f494e739f0d88e15cd2a8049c634c25004c3ccfb4ee812bc9de233870eb" },
-    { "workflow": "evidence", "path": "reports/generated/k6/availability-summary.json", "sha256": "5cedfa808b632a13e645e1af36b1fe6f6653c14a9c4aa0994e2fbc3858f0a8f3" },
-    { "workflow": "evidence", "path": "reports/generated/k6/booking-race-summary.json", "sha256": "e2354c5eec9b80c4e435017db806654558b1d84348acedf66962c3f0d0db52c2" },
-    { "workflow": "evidence", "path": "reports/generated/lighthouse/report.json", "sha256": "c71d7b6ebc9665d27ea90004114f89be188e4f2c5db8cdfee7af2f9e76c25eee" },
-    { "workflow": "evidence", "path": "reports/generated/zap/frontend.json", "sha256": "047f7829c4829abdcc7cb87fba184b6fc7b36bc11fc4e17b31efe846e9e0bcfd" },
-    { "workflow": "evidence", "path": "reports/generated/zap/api.json", "sha256": "25f4928bbf3a84381c6e3e09e4500678b41f716bd64f2c50dcbe1df46c217986" }
+    { "workflow": "core", "path": "reports/generated/stryker/mutation.json", "sha256": "5944ecb56701612d58d9ebfe456a5e90fc38af433d685924ed8d0e74fea11ebe" },
+    { "workflow": "core", "path": "reports/generated/playwright-results.json", "sha256": "2fa0d24b3c78904ebcb6bbfc09374f689c42816077364e6524a94fa67134ffd3" },
+    { "workflow": "evidence", "path": "reports/generated/k6/availability-summary.json", "sha256": "322d8119460f983b0fd5a17873fac734f968bd7bea087664dd498c6aa4ee7a57" },
+    { "workflow": "evidence", "path": "reports/generated/k6/booking-race-summary.json", "sha256": "ee550452743a281d4bc4d0ae844029c72144b49ff68ec3e4b4bc181c020ee133" },
+    { "workflow": "evidence", "path": "reports/generated/lighthouse/report.json", "sha256": "6834b361a0f7c5b99582bdee3be2796ce0b635024c830791477f89c0d352f836" },
+    { "workflow": "evidence", "path": "reports/generated/zap/frontend.json", "sha256": "f42cd4653649646db335504141555d48065d41792bff45fc601c3cd0b5f57173" },
+    { "workflow": "evidence", "path": "reports/generated/zap/api.json", "sha256": "c23b7f6e3ce9cbf8adf125b703440938cdf824b62b974eefd83d3136ed78de3f" }
   ],
   "thresholds": {
     "coverage": { "lines": 85, "branches": 70, "functions": 85 },

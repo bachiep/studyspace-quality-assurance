@@ -5,14 +5,14 @@
 | Hoạt động | Kết quả | Evidence |
 |---|---:|---|
 | Unit + property-based + API (Vitest) | 47/47 pass (11 domain/property-based, 36 API/configuration) | `backend/tests`, CI quality run |
-| Coverage V8 | 98.35% line, 94.02% branch, 100% function | Core CI run [37348312215](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37348312215) |
-| Mutation testing | 86 killed / 20 survived / 2 no-coverage / 27 compile-error; score 81,13% (`killed / (killed + survived)`) | Core CI artifact gắn commit kiểm thử `364f3b9` |
+| Coverage V8 | 98.35% line, 94.02% branch, 100% function | Core CI run [37350847374](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37350847374) |
+| Mutation testing | 86 killed / 20 survived / 2 no-coverage / 27 compile-error; score 81,13% (`killed / (killed + survived)`) | Core CI artifact gắn commit kiểm thử `47559ed` |
 | E2E Chromium | 24/24 pass trên Desktop Chrome và Pixel 5; 12 scenario | `tests/e2e/studyspace.spec.ts`, Playwright artifact |
 | Axe login/student/admin | 0 vi phạm serious/critical trong ba trang | `tests/e2e/studyspace.spec.ts`, CI E2E step |
-| Lighthouse production preview | Performance 98; Accessibility 100; Best Practices 96 | Quality evidence run [37348951730](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37348951730) |
-| k6 availability | 20 VUs/2 phút; 2.400 requests; checks 100%; error 0%; p95 6.17 ms | Quality evidence run [37348951730](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37348951730) |
-| k6 booking race | 20 VUs; 1 response 201, 19 response 409; checks 100%; error 0%; p95 62.06 ms | Quality evidence run [37348951730](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37348951730) (JWT sanitized) |
-| OWASP ZAP baseline | Frontend 0H/0M/9L/8I; API 0H/0M/0L/2I | Quality evidence run [37348951730](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37348951730); unauthenticated baseline |
+| Lighthouse production preview | Performance 100; Accessibility 100; Best Practices 96 | Quality evidence run [37351470090](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37351470090) |
+| k6 availability | 20 VUs/2 phút; 2.400 requests; checks 100%; error 0%; p95 5.92 ms | Quality evidence run [37351470090](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37351470090) |
+| k6 booking race | 20 VUs; 1 response 201, 19 response 409; checks 100%; error 0%; p95 64.43 ms | Quality evidence run [37351470090](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37351470090) (JWT sanitized) |
+| OWASP ZAP baseline | Frontend 0H/0M/9L/5I; API 0H/0M/0L/2I | Quality evidence run [37351470090](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37351470090); unauthenticated baseline |
 | Runtime dependency audit | 0 High/critical vulnerabilities (`--omit=dev --omit=optional`) | CI security step |
 | Fresh-clone bootstrap | Summary historical, không dùng để kết luận final | `docs/evidence/final/manifest.json` và core workflow |
 | Database migration isolation | Migrations áp thành công từ database test trắng trước unit/API và E2E | `docs/evidence/bootstrap-summary.json`, CI quality run |
