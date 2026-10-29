@@ -1,60 +1,61 @@
 {
   "schemaVersion": 1,
   "status": "evidence-snapshot",
-  "verifiedAt": "2026-10-05T17:55:34Z",
+  "verifiedAt": "2026-10-29T01:31:32Z",
   "source": {
-    "testedCommit": "47559ed8316476054282dda005b76aefb25af1f2",
-    "coreWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37350847374",
-    "evidenceWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/37351470090",
+    "testedCommit": "17059a973875881f4f60a12800b7e891a880a03b",
+    "coreWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/40800039637",
+    "evidenceWorkflow": "https://github.com/bachiep/studyspace-quality-assurance/actions/runs/40800516515",
     "repository": "https://github.com/bachiep/studyspace-quality-assurance",
-    "coreWorkflowCreatedAt": "2026-10-05T17:46:21Z",
-    "coreWorkflowCompletedAt": "2026-10-05T17:50:42Z",
-    "evidenceWorkflowCreatedAt": "2026-10-05T17:50:46Z",
-    "evidenceWorkflowCompletedAt": "2026-10-05T17:55:41Z"
+    "coreWorkflowCreatedAt": "2026-10-29T01:22:35Z",
+    "coreWorkflowCompletedAt": "2026-10-29T01:27:05Z",
+    "evidenceWorkflowCreatedAt": "2026-10-29T01:27:15Z",
+    "evidenceWorkflowCompletedAt": "2026-10-29T01:31:37Z"
   },
   "environment": {
-    "node": "v22.23.3",
+    "node": "v22.23.4",
     "platform": "linux-x64",
     "npm": "10.9.9",
-      "k6": "v2.3.0",
+    "k6": "v2.3.0",
     "lighthouse": "13.5.0",
-    "zapImage": "ghcr.io/zaproxy/zaproxy@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef"
+    "zapImage": "ghcr.io/zaproxy/zaproxy@sha256:030d3df57735dacbb83464854758e674dd9ad01d79d12a129a8e58b1fd384238"
   },
   "results": {
     "traceability": { "requirements": 15, "testCases": 61, "defects": 8, "passed": true },
     "automatedTests": { "passed": 47, "total": 47 },
+    "runtimeDependencyAudit": { "command": "npm audit --omit=dev --omit=optional --audit-level=high", "vulnerabilities": 0, "passed": true },
     "coverage": { "lines": 98.35, "branches": 94.02, "functions": 100, "statements": 98.35 },
-      "mutation": {
-      "killed": 86,
-      "survived": 20,
+    "mutation": {
+      "killed": 85,
+      "survived": 21,
       "noCoverage": 2,
       "compileError": 27,
-      "score": 81.13,
+      "score": 80.19,
       "formula": "killed / (killed + survived)",
       "scope": "backend/src/domain/booking-policy.ts"
     },
     "playwright": { "passed": 24, "expected": 24, "skipped": 0, "unexpected": 0, "flaky": 0 },
     "k6": {
-      "availability": { "requests": 2400, "p95Ms": 5.92, "checksRate": 1, "requestFailureRate": 0, "passed": true },
-      "bookingRace": { "requests": 22, "created201": 1, "conflict409": 19, "checksRate": 1, "expectedOutcomeRate": 1, "p95Ms": 64.43, "passed": true }
+      "availability": { "requests": 2400, "p95Ms": 2.63, "checksRate": 1, "requestFailureRate": 0, "passed": true },
+      "bookingRace": { "requests": 22, "created201": 1, "conflict409": 19, "checksRate": 1, "expectedOutcomeRate": 1, "p95Ms": 42.45, "passed": true }
     },
     "lighthouse": { "performance": 100, "accessibility": 100, "bestPractices": 96 },
     "zapBaseline": {
       "scope": "unauthenticated frontend preview and public API baseline",
-      "frontend": { "high": 0, "medium": 0, "low": 9, "informational": 5 },
-      "api": { "high": 0, "medium": 0, "low": 0, "informational": 2 },
+      "frontend": { "high": 0, "medium": 0, "low": 9, "informational": 6 },
+      "api": { "high": 0, "medium": 0, "low": 0, "informational": 4 },
       "passedHighAlertGate": true
     }
   },
   "artifacts": [
     { "workflow": "core", "path": "backend/coverage/coverage-summary.json", "sha256": "c28d242bd940de9c86146808c5e28aabc1ee73fc82366cc1683b4b8b576ba872" },
-    { "workflow": "core", "path": "reports/generated/stryker/mutation.json", "sha256": "5944ecb56701612d58d9ebfe456a5e90fc38af433d685924ed8d0e74fea11ebe" },
-    { "workflow": "core", "path": "reports/generated/playwright-results.json", "sha256": "2fa0d24b3c78904ebcb6bbfc09374f689c42816077364e6524a94fa67134ffd3" },
-    { "workflow": "evidence", "path": "reports/generated/k6/availability-summary.json", "sha256": "322d8119460f983b0fd5a17873fac734f968bd7bea087664dd498c6aa4ee7a57" },
-    { "workflow": "evidence", "path": "reports/generated/k6/booking-race-summary.json", "sha256": "ee550452743a281d4bc4d0ae844029c72144b49ff68ec3e4b4bc181c020ee133" },
-    { "workflow": "evidence", "path": "reports/generated/lighthouse/report.json", "sha256": "6834b361a0f7c5b99582bdee3be2796ce0b635024c830791477f89c0d352f836" },
-    { "workflow": "evidence", "path": "reports/generated/zap/frontend.json", "sha256": "f42cd4653649646db335504141555d48065d41792bff45fc601c3cd0b5f57173" },
-    { "workflow": "evidence", "path": "reports/generated/zap/api.json", "sha256": "c23b7f6e3ce9cbf8adf125b703440938cdf824b62b974eefd83d3136ed78de3f" }
+    { "workflow": "core", "path": "reports/generated/stryker/mutation.json", "sha256": "dfa27dfee5967b9e0cb68e3214bbc45291ac4bf0a6786f1fbd2b312c76f008ec" },
+    { "workflow": "core", "path": "reports/generated/playwright-results.json", "sha256": "4936937661eb0a0244986bb3f13f6d98f9fd16eda79927d0d2c6d777adb8cfc8" },
+    { "workflow": "evidence", "path": "reports/generated/k6/availability-summary.json", "sha256": "d744c8f7f590fc05dfa517b0dfd86d5fdd6bf7a7129a20b3c35083a41411c2f0" },
+    { "workflow": "evidence", "path": "reports/generated/k6/booking-race-summary.json", "sha256": "eb7d6dfd996b416a18f71f8d956de7d8ac347a357c2d35d000a510ddb68b24c0" },
+    { "workflow": "evidence", "path": "reports/generated/lighthouse/report.json", "sha256": "eec16553eff7d3dfdd6de004b86ab1939c481ef6dd8f5a02677e91159cff83b6" },
+    { "workflow": "evidence", "path": "reports/generated/zap/frontend.json", "sha256": "4e6d1e671e39552185d921e3d0e206959a0116ccdb883c2f275368f422a46dc3" },
+    { "workflow": "evidence", "path": "reports/generated/zap/api.json", "sha256": "74ad50634543262e186b6c6ace5b4de95da6f7b7a2d449ed83fb8826b062f096" }
   ],
   "thresholds": {
     "coverage": { "lines": 85, "branches": 70, "functions": 85 },

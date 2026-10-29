@@ -122,21 +122,21 @@ Kịch bản race yêu cầu đúng một response `201` và các request còn l
 - [`quality-evidence.yml`](.github/workflows/quality-evidence.yml) chạy thủ công hoặc khi tạo tag release: k6, Lighthouse, ZAP, manifest và artifact đầy đủ.
 - [`docs/evidence/final/manifest.json`](docs/evidence/final/manifest.json) là bản kê gọn của evidence: commit đã kiểm thử, workflow, phiên bản môi trường, threshold, số liệu và SHA-256 artifact.
 
-Evidence snapshot hiện được gắn với commit kiểm thử `47559ed8316476054282dda005b76aefb25af1f2`:
+Evidence snapshot hiện được gắn với commit kiểm thử `17059a973875881f4f60a12800b7e891a880a03b`:
 
 - 47/47 unit/property/API pass;
 - 98,35% line, 94,02% branch, 100% function;
-- mutation score 81,13% theo `killed / (killed + survived)`;
+- mutation score 80,19% theo `killed / (killed + survived)` (85 killed, 21 survived; 27 compile error và 2 no-coverage được tách khỏi mẫu số);
 - Playwright 24/24 trên Chromium desktop/mobile;
-- k6 availability p95 5,92 ms và booking race một `201`, 19 `409`;
+- k6 availability p95 2,63 ms và booking race một `201`, 19 `409` (p95 42,45 ms);
 - Lighthouse Performance 100, Accessibility 100, Best Practices 96;
-- ZAP baseline không có High alert.
+- ZAP baseline không có High alert (frontend: 9 Low/6 Informational; public API: 4 Informational).
 
 Các số liệu trên chỉ áp dụng cho commit, workload và môi trường được ghi trong manifest; chúng không phải chứng nhận tuyệt đối cho mọi môi trường triển khai. ZAP là unauthenticated baseline, k6 là workload local single-instance, và chưa có đánh giá Firefox/WebKit hoặc authenticated penetration test.
 
 ### Trạng thái rà soát cục bộ
 
-Lần rà soát ngày 29/10/2026 đã chạy lại `npm run qa:trace`, `npm test`, `npm run build`, `npm run e2e` và `npm audit --omit=dev --omit=optional --audit-level=high`: các gate đều đạt; backend 47/47 test pass, coverage 98,35% line, 94,02% branch, 100% function, E2E 24/24 và runtime audit trả `found 0 vulnerabilities`. Dependency remediation đã cập nhật Express/body-parser, Vite, Zod, express-rate-limit, ip-address và qs.
+Lần rà soát ngày 29/10/2026 đã chạy lại `npm run qa:trace`, `npm test`, `npm run build`, `npm run e2e` và `npm audit --omit=dev --omit=optional --audit-level=high`: các gate đều đạt; backend 47/47 test pass, coverage 98,35% line, 94,02% branch, 100% function, E2E 24/24 và runtime audit trả `found 0 vulnerabilities`. Hai workflow tương ứng là [Core CI](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/40800039637) và [quality evidence](https://github.com/bachiep/studyspace-quality-assurance/actions/runs/40800516515). Dependency remediation đã cập nhật Express/body-parser, Vite, Zod, express-rate-limit, ip-address và qs.
 
 Finding dependency ban đầu được theo dõi tại [issue #33](https://github.com/bachiep/studyspace-quality-assurance/issues/33). Issue chỉ được đóng sau khi các thay đổi này có fix commit, workflow CI/evidence trên GitHub và retest evidence gắn với cùng commit.
 
